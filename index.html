@@ -1,0 +1,2728 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Scoopcast</title>
+        <link rel="stylesheet" href="./style.css">
+        <link rel="stylesheet" href="frame-viewer.css">
+        <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="images/android-chrome-192x192.png">
+        <link rel="icon" href="images/favicon.ico">
+        <style>
+            /* Add reveal popup styles */
+            .reveal-popup {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: transparent;
+                display: none;
+                justify-content: center;
+                align-items: center;
+                z-index: 2000;
+                backdrop-filter: none;
+            }
+
+            .reveal-popup.show {
+                display: flex;
+            }
+
+            .reveal-content {
+                background: linear-gradient(145deg, rgba(0, 0, 0, 0.95), rgba(20, 20, 20, 0.98));
+                padding: 30px;
+                border-radius: 20px;
+                text-align: center;
+                max-width: 90%;
+                max-height: 90vh;
+                box-shadow: 0 0 50px rgba(0, 255, 255, 0.3),
+                           inset 0 0 30px rgba(0, 255, 255, 0.1);
+                border: 2px solid rgba(0, 255, 255, 0.2);
+                position: relative;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .reveal-title {
+                color: #00ffff;
+                font-size: 28px;
+                margin-bottom: 20px;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+                text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+            }
+
+            .reveal-image {
+                max-width: 100%;
+                max-height: 70vh;
+                border-radius: 10px;
+                margin-bottom: 20px;
+                box-shadow: 0 0 30px rgba(0, 255, 255, 0.2);
+            }
+
+            /* Section Navigation */
+            .section-navigation {
+                position: fixed;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                display: flex;
+                gap: 15px;
+                z-index: 1000;
+                background: rgba(0, 0, 0, 0.7);
+                padding: 10px;
+                border-radius: 15px;
+                backdrop-filter: blur(10px);
+                box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            .section-btn {
+                padding: 12px 25px;
+                background: rgba(0, 0, 0, 0.5);
+                color: white;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                border-radius: 10px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                font-size: 16px;
+                font-weight: 500;
+                letter-spacing: 1px;
+            }
+
+            .section-btn:hover {
+                background: rgba(0, 0, 0, 0.8);
+                border-color: rgba(255, 255, 255, 0.4);
+                transform: translateY(-2px);
+            }
+
+            .section-btn.active {
+                background: #4CAF50;
+                border-color: #4CAF50;
+                box-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
+            }
+
+            /* Frame Viewer */
+            .frame-viewer {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -60%);
+                width: 84%;
+                max-width: 840px;
+                background: linear-gradient(145deg, rgba(0, 0, 0, 0.9), rgba(20, 20, 20, 0.95));
+                padding: 21px;
+                padding-top: 42px;
+                border-radius: 16px;
+                display: block;
+                z-index: 900;
+                box-shadow: 0 0 40px rgba(0, 0, 0, 0.5),
+                           inset 0 0 20px rgba(0, 0, 0, 0.3);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                backdrop-filter: blur(10px);
+                margin-bottom: 63px;
+            }
+
+            .frame-title {
+                color: #fff;
+                text-align: center;
+                margin-bottom: 21px;
+                margin-top: 0;
+                font-size: 25px;
+                font-weight: bold;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+                text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+                position: relative;
+                padding-bottom: 15px;
+            }
+
+            .frame-title::after {
+                content: '';
+                position: absolute;
+                bottom: 0;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 100px;
+                height: 3px;
+                background: linear-gradient(90deg, transparent, #4CAF50, transparent);
+                border-radius: 2px;
+            }
+
+            .frame-container {
+                position: relative;
+                width: 100%;
+                height: 472px;
+                background: rgba(0, 0, 0, 0.5);
+                border-radius: 15px;
+                overflow: hidden;
+                box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.5);
+                border: 2px solid rgba(255, 255, 255, 0.1);
+            }
+
+            .frame-image {
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+                transition: transform 0.3s ease;
+                padding: 20px;
+                box-sizing: border-box;
+            }
+
+            .frame-image:hover {
+                transform: scale(1.02);
+            }
+
+            .frame-image.error-image {
+                opacity: 0.7;
+                filter: grayscale(100%);
+                object-fit: contain;
+                padding: 20px;
+            }
+
+            .frame-nav {
+                position: absolute;
+                top: 50%;
+                transform: translateY(-50%);
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                padding: 20px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                border-radius: 50%;
+                z-index: 1001;
+                width: 42px;
+                height: 42px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 21px;
+                box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            }
+
+            .frame-nav:hover {
+                background: rgba(0, 0, 0, 0.9);
+                border-color: rgba(255, 255, 255, 0.4);
+                box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+                transform: translateY(-50%) scale(1.1);
+            }
+
+            .frame-prev {
+                left: 20px;
+            }
+
+            .frame-next {
+                right: 20px;
+            }
+
+            .frame-counter {
+                position: absolute;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                color: white;
+                background: rgba(0, 0, 0, 0.8);
+                padding: 8px 20px;
+                border-radius: 20px;
+                z-index: 1001;
+                font-size: 16px;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            }
+
+            .reveal-button {
+                position: absolute;
+                bottom: 20px;
+                right: 20px;
+                background: #4CAF50;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 16px;
+                transition: all 0.3s ease;
+                z-index: 1002;
+            }
+
+            .reveal-button:hover {
+                background: #45a049;
+                transform: translateY(-2px);
+            }
+
+            .image-name {
+                position: absolute;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(0, 0, 0, 0.8);
+                color: #00ffff;
+                padding: 10px 20px;
+                border-radius: 5px;
+                font-size: 18px;
+                display: none;
+                z-index: 1002;
+                border: 1px solid rgba(0, 255, 255, 0.2);
+                white-space: nowrap;
+                overflow: hidden;
+                text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+            }
+
+            .image-name.show {
+                display: block;
+                animation: fadeIn 0.3s ease;
+            }
+
+            .image-name.typing {
+                display: block;
+                border-right: 2px solid #00ffff;
+                animation: typing 1s steps(30, end), blink-caret 0.75s step-end infinite;
+            }
+
+            .image-name.glitch {
+                display: block;
+                animation: glitch-reveal 1.5s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+            }
+
+            @keyframes typing {
+                from { width: 0 }
+                to { width: 100% }
+            }
+
+            @keyframes blink-caret {
+                from, to { border-color: transparent }
+                50% { border-color: #00ffff }
+            }
+
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translate(-50%, 20px); }
+                to { opacity: 1; transform: translate(-50%, 0); }
+            }
+
+            @keyframes glitch-reveal {
+                0% {
+                    clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
+                    transform: translate(-50%, 0) skew(0deg);
+                    text-shadow: none;
+                }
+                10% {
+                    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+                    transform: translate(-52%, 0) skew(10deg);
+                    text-shadow: 3px 0 #ff00ff, -3px 0 #00ffff;
+                }
+                15% {
+                    transform: translate(-48%, 0) skew(-5deg);
+                    text-shadow: -3px 0 #ff00ff, 3px 0 #00ffff;
+                }
+                20% {
+                    transform: translate(-50%, 0) skew(0deg);
+                    text-shadow: 3px 3px #ff00ff, -3px -3px #00ffff;
+                }
+                30% {
+                    transform: translate(-50%, 0);
+                    text-shadow: none;
+                }
+                35% {
+                    transform: translate(-50%, 0);
+                    text-shadow: 0 0 20px #00ffff;
+                }
+                40% {
+                    transform: translate(-50%, 0);
+                    text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 30px #00ffff;
+                }
+                100% {
+                    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+                    transform: translate(-50%, 0);
+                    text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+                }
+            }
+
+            .glitch-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: transparent;
+                pointer-events: none;
+                z-index: 9999;
+                animation: glitch-overlay 1s ease-out;
+                opacity: 0;
+            }
+
+            @keyframes glitch-overlay {
+                0% {
+                    background: transparent;
+                }
+                10% {
+                    background: rgba(0, 255, 255, 0.1);
+                }
+                20% {
+                    background: transparent;
+                }
+                30% {
+                    background: rgba(255, 0, 255, 0.1);
+                }
+                40% {
+                    background: transparent;
+                }
+                50% {
+                    background: rgba(0, 255, 255, 0.1);
+                }
+                100% {
+                    background: transparent;
+                }
+            }
+
+            /* Notification styles */
+            .notification {
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(0, 0, 0, 0.8);
+                color: #00ffff;
+                padding: 15px 30px;
+                clip-path: polygon(
+                    0 10px,
+                    10px 0,
+                    calc(100% - 10px) 0,
+                    100% 10px,
+                    100% calc(100% - 10px),
+                    calc(100% - 10px) 100%,
+                    10px 100%,
+                    0 calc(100% - 10px)
+                );
+                font-family: monospace;
+                font-size: 18px;
+                text-shadow: 0 0 10px #00ffff;
+                border: 1px solid #00ffff;
+                z-index: 2000;
+                animation: notificationGlow 2s ease-in-out;
+            }
+
+            @keyframes notificationGlow {
+                0% { opacity: 0; transform: translate(-50%, -20px); box-shadow: 0 0 0 rgba(0, 255, 255, 0); }
+                20% { opacity: 1; transform: translate(-50%, 0); box-shadow: 0 0 30px rgba(0, 255, 255, 0.5); }
+                80% { opacity: 1; transform: translate(-50%, 0); box-shadow: 0 0 30px rgba(0, 255, 255, 0.5); }
+                100% { opacity: 0; transform: translate(-50%, -20px); box-shadow: 0 0 0 rgba(0, 255, 255, 0); }
+            }
+
+            /* Scoreboard Styles */
+            .scoreboard {
+                position: fixed;
+                right: 30px;
+                top: 50%;
+                transform: translateY(-50%);
+                background: linear-gradient(145deg, rgba(0, 0, 0, 0.9), rgba(20, 20, 20, 0.95));
+                padding: 15px;
+                border-radius: 12px;
+                box-shadow: 0 0 30px rgba(0, 0, 0, 0.5),
+                           inset 0 0 20px rgba(0, 0, 0, 0.3);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                backdrop-filter: blur(10px);
+                z-index: 1000;
+                min-width: 220px;
+            }
+
+            .scoreboard-title {
+                color: #00ffff;
+                text-align: center;
+                font-size: 20px;
+                margin: 0 0 15px 0;
+                padding-bottom: 8px;
+                border-bottom: 2px solid rgba(0, 255, 255, 0.3);
+                text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+                letter-spacing: 2px;
+            }
+
+            .score-container {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+                padding-bottom: 8px;
+            }
+
+            .score-card {
+                background: rgba(0, 0, 0, 0.5);
+                padding: 12px;
+                border-radius: 8px;
+                border: 1px solid rgba(0, 255, 255, 0.2);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                transition: all 0.3s ease;
+            }
+
+            .player-name {
+                color: #fff;
+                font-size: 16px;
+                font-weight: bold;
+                text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+            }
+
+            .player-score {
+                color: #00ffff;
+                font-size: 20px;
+                font-weight: bold;
+                text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+            }
+
+            .score-controls {
+                display: flex;
+                gap: 8px;
+            }
+
+            .score-btn {
+                width: 32px;
+                height: 32px;
+                border: none;
+                border-radius: 6px;
+                font-size: 18px;
+                font-weight: bold;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+            }
+
+            .score-btn.plus {
+                background: #4CAF50;
+            }
+
+            .score-btn.minus {
+                background: #f44336;
+            }
+
+            .score-btn:hover {
+                transform: scale(1.1);
+                box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+            }
+
+            .score-btn:active {
+                transform: scale(0.95);
+            }
+
+            @keyframes scoreUpdate {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.2); }
+                100% { transform: scale(1); }
+            }
+
+            .score-updated {
+                animation: scoreUpdate 0.3s ease;
+            }
+
+            /* Add these styles to the existing style section */
+            .submit-score-btn {
+                width: 100%;
+                padding: 12px;
+                margin-top: 15px;
+                background: linear-gradient(145deg, #4CAF50, #45a049);
+                color: white;
+                border: none;
+                border-radius: 8px;
+                font-size: 16px;
+                font-weight: bold;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+                box-shadow: 0 0 20px rgba(76, 175, 80, 0.2);
+                border: 1px solid rgba(76, 175, 80, 0.3);
+            }
+
+            .submit-score-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 0 30px rgba(76, 175, 80, 0.4);
+                background: linear-gradient(145deg, #45a049, #4CAF50);
+            }
+
+            .submit-score-btn:active {
+                transform: translateY(1px);
+            }
+
+            .winner-popup {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%) scale(0.9);
+                background: linear-gradient(145deg, rgba(0, 0, 0, 0.95), rgba(20, 20, 20, 0.98));
+                padding: 30px;
+                border-radius: 20px;
+                z-index: 2000;
+                text-align: center;
+                min-width: 300px;
+                opacity: 0;
+                visibility: hidden;
+                transition: all 0.3s ease;
+                box-shadow: 0 0 50px rgba(0, 255, 255, 0.3),
+                           inset 0 0 30px rgba(0, 255, 255, 0.1);
+                border: 2px solid rgba(0, 255, 255, 0.2);
+                backdrop-filter: blur(10px);
+            }
+
+            .winner-popup.show {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+                visibility: visible;
+            }
+
+            .winner-title {
+                color: #00ffff;
+                font-size: 28px;
+                margin-bottom: 20px;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+                text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+            }
+
+            .winner-name {
+                color: #fff;
+                font-size: 36px;
+                margin: 20px 0;
+                font-weight: bold;
+                text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            }
+
+            .winner-score {
+                color: #00ffff;
+                font-size: 24px;
+                margin-bottom: 25px;
+                text-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+            }
+
+            .creator-credit {
+                margin-bottom: 20px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .creator-credit p {
+                margin: 0;
+                font-size: 16px;
+                color: #fff;
+                text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+            }
+
+            .qr-code {
+                width: 200px;
+                height: 200px;
+                object-fit: contain;
+                border: 2px solid rgba(0, 255, 255, 0.3);
+                border-radius: 10px;
+                padding: 10px;
+                background: rgba(0, 0, 0, 0.5);
+                box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+            }
+
+            .close-popup {
+                padding: 10px 25px;
+                background: rgba(0, 255, 255, 0.2);
+                color: white;
+                border: 1px solid rgba(0, 255, 255, 0.3);
+                border-radius: 8px;
+                cursor: pointer;
+                font-size: 16px;
+                transition: all 0.3s ease;
+            }
+
+            .close-popup:hover {
+                background: rgba(0, 255, 255, 0.3);
+                transform: translateY(-2px);
+            }
+
+            /* Add confetti styles */
+            .confetti {
+                position: fixed;
+                top: -10px;
+                width: 10px;
+                height: 10px;
+                animation: confetti-fall 3s linear forwards;
+                z-index: 1999;
+            }
+
+            @keyframes confetti-fall {
+                0% {
+                    transform: translateY(0) rotate(0deg);
+                    opacity: 1;
+                }
+                100% {
+                    transform: translateY(100vh) rotate(720deg);
+                    opacity: 0;
+                }
+            }
+
+            /* All-time Stats Panel */
+            .all-time-stats {
+                position: fixed;
+                top: 20px;
+                left: 20px;
+                background: linear-gradient(145deg, rgba(0, 0, 0, 0.9), rgba(20, 20, 20, 0.95));
+                padding: 12px;
+                border-radius: 10px;
+                box-shadow: 0 0 20px rgba(0, 255, 255, 0.2),
+                           inset 0 0 15px rgba(0, 255, 255, 0.1);
+                border: 1px solid rgba(0, 255, 255, 0.2);
+                backdrop-filter: blur(10px);
+                z-index: 1000;
+                min-width: 200px;
+                clip-path: polygon(
+                    0 6px,
+                    6px 0,
+                    calc(100% - 6px) 0,
+                    100% 6px,
+                    100% calc(100% - 6px),
+                    calc(100% - 6px) 100%,
+                    6px 100%,
+                    0 calc(100% - 6px)
+                );
+            }
+
+            .stats-title {
+                color: #00ffff;
+                text-align: center;
+                font-size: 14px;
+                margin: 0 0 10px 0;
+                padding-bottom: 6px;
+                border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+                text-shadow: 0 0 8px rgba(0, 255, 255, 0.5);
+                letter-spacing: 1px;
+                text-transform: uppercase;
+            }
+
+            .stats-container {
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+            }
+
+            .stats-card {
+                background: rgba(0, 0, 0, 0.5);
+                padding: 6px;
+                border-radius: 5px;
+                border: 1px solid rgba(0, 255, 255, 0.2);
+                transition: all 0.3s ease;
+            }
+
+            .stats-card:hover {
+                background: rgba(0, 0, 0, 0.7);
+                border-color: rgba(0, 255, 255, 0.4);
+                transform: translateX(5px);
+            }
+
+            .stats-player-name {
+                color: #fff;
+                font-size: 12px;
+                font-weight: bold;
+                margin-bottom: 3px;
+                text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+            }
+
+            .stats-details {
+                display: flex;
+                justify-content: space-between;
+                gap: 6px;
+                font-size: 11px;
+                color: rgba(255, 255, 255, 0.8);
+            }
+
+            .stats-item {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .stats-label {
+                color: #00ffff;
+                font-size: 9px;
+                opacity: 0.8;
+                margin-bottom: 1px;
+            }
+
+            .stats-value {
+                font-weight: bold;
+                font-size: 20px;
+                color: #00ffff;
+                text-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+            }
+
+            .stats-value.score-updated {
+                animation: scoreGlow 1s ease-in-out;
+            }
+            
+            @keyframes scoreGlow {
+                0% { text-shadow: 0 0 10px rgba(0, 255, 255, 0.3); }
+                50% { text-shadow: 0 0 25px rgba(0, 255, 255, 0.8); color: #ffffff; }
+                100% { text-shadow: 0 0 10px rgba(0, 255, 255, 0.3); }
+            }
+            
+            /* Remove reset stats button styles */
+            .reset-stats-btn {
+                display: none !important;
+            }
+            
+            .reset-stats-btn:hover {
+                display: none !important;
+            }
+
+            .last-updated {
+                color: rgba(255, 255, 255, 0.5);
+                font-size: 9px;
+                text-align: center;
+                margin-top: 8px;
+                font-style: italic;
+            }
+
+            /* Add this before the winner-popup div */
+            .referee-popup {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%) scale(0.9);
+                background: linear-gradient(145deg, rgba(0, 0, 0, 0.95), rgba(20, 20, 20, 0.98));
+                padding: 30px;
+                border-radius: 20px;
+                z-index: 2000;
+                text-align: center;
+                min-width: 300px;
+                opacity: 0;
+                visibility: hidden;
+                transition: all 0.3s ease;
+                box-shadow: 0 0 50px rgba(0, 255, 255, 0.3),
+                           inset 0 0 30px rgba(0, 255, 255, 0.1);
+                border: 2px solid rgba(0, 255, 255, 0.2);
+                backdrop-filter: blur(10px);
+            }
+
+            .referee-popup.show {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+                visibility: visible;
+            }
+
+            .referee-title {
+                color: #00ffff;
+                font-size: 28px;
+                margin-bottom: 20px;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+                text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+            }
+
+            .referee-name {
+                color: #fff;
+                font-size: 36px;
+                margin: 20px 0;
+                font-weight: bold;
+                text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            }
+
+            /* Add this to the body style */
+            body {
+                margin: 0;
+                padding: 0;
+                min-height: 100vh;
+                background: #000000;
+                background: 
+                    radial-gradient(circle at 50% 120%, rgba(0, 149, 255, 0.15) 0%, transparent 60%),
+                    radial-gradient(circle at 20% 40%, rgba(66, 220, 255, 0.1) 0%, transparent 40%),
+                    radial-gradient(circle at 80% 30%, rgba(0, 183, 255, 0.12) 0%, transparent 50%),
+                    linear-gradient(to bottom, #000000, #001428);
+                overflow: hidden;
+                position: relative;
+            }
+
+            /* Add ambient glow effects */
+            .ambient-glow {
+                position: fixed;
+                pointer-events: none;
+                z-index: -1;
+            }
+
+            .glow-1 {
+                top: -50%;
+                left: -20%;
+                width: 150vh;
+                height: 150vh;
+                background: radial-gradient(circle, rgba(0, 149, 255, 0.08) 0%, transparent 70%);
+                animation: pulse 8s ease-in-out infinite;
+            }
+
+            .glow-2 {
+                bottom: -30%;
+                right: -10%;
+                width: 120vh;
+                height: 120vh;
+                background: radial-gradient(circle, rgba(66, 220, 255, 0.06) 0%, transparent 60%);
+                animation: pulse 12s ease-in-out infinite reverse;
+            }
+
+            .glow-3 {
+                top: 20%;
+                left: 50%;
+                width: 80vh;
+                height: 80vh;
+                background: radial-gradient(circle, rgba(0, 183, 255, 0.04) 0%, transparent 50%);
+                animation: pulse 10s ease-in-out infinite 2s;
+            }
+
+            @keyframes pulse {
+                0%, 100% { transform: scale(1); opacity: 1; }
+                50% { transform: scale(1.2); opacity: 0.8; }
+            }
+
+            /* Add these styles for blur effect, open button and timer */
+            .frame-image.blurred {
+                filter: blur(20px);
+                transition: filter 0.5s ease;
+                margin-top: -30px;
+            }
+
+            .frame-open-btn {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(0, 255, 255, 0.1);
+                border: 2px solid #00ffff;
+                color: #00ffff;
+                padding: 15px 40px;
+                font-size: 24px;
+                cursor: pointer;
+                z-index: 10;
+                transition: all 0.3s ease;
+                text-transform: uppercase;
+                letter-spacing: 3px;
+                backdrop-filter: blur(5px);
+                box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+                clip-path: polygon(
+                    0 10px,
+                    10px 0,
+                    calc(100% - 10px) 0,
+                    100% 10px,
+                    100% calc(100% - 10px),
+                    calc(100% - 10px) 100%,
+                    10px 100%,
+                    0 calc(100% - 10px)
+                );
+            }
+
+            .frame-open-btn:hover {
+                background: rgba(0, 255, 255, 0.2);
+                transform: translate(-50%, -50%) scale(1.1);
+                text-shadow: 0 0 10px #00ffff;
+                box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+            }
+
+            .frame-timer {
+                position: absolute;
+                top: 20px;
+                right: 20px;
+                background: rgba(0, 0, 0, 0.7);
+                color: #00ffff;
+                padding: 10px 20px;
+                font-size: 24px;
+                font-family: monospace;
+                border: 1px solid #00ffff;
+                border-radius: 5px;
+                text-shadow: 0 0 10px #00ffff;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+                z-index: 10;
+            }
+
+            .frame-timer.show {
+                opacity: 1;
+            }
+
+            .main-content {
+                display: block;
+            }
+            
+            /* Referee Selector Styles */
+            .referee-selector {
+                position: fixed;
+                bottom: 20px;
+                left: 20px;
+                z-index: 1000;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                max-width: 230px;
+            }
+            
+            .referee-buttons {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                align-items: center;
+            }
+            
+            .select-referee-btn {
+                padding: 15px 25px;
+                font-size: 18px;
+                font-weight: bold;
+                text-transform: uppercase;
+                background: linear-gradient(145deg, #4CAF50, #2E7D32);
+                color: white;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3), 0 0 20px rgba(76, 175, 80, 0.2);
+                letter-spacing: 1px;
+                clip-path: polygon(
+                    0 10px,
+                    10px 0,
+                    calc(100% - 10px) 0,
+                    100% 10px,
+                    100% calc(100% - 10px),
+                    calc(100% - 10px) 100%,
+                    10px 100%,
+                    0 calc(100% - 10px)
+                );
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+                text-align: center;
+            }
+            
+            .select-referee-btn:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+                background: linear-gradient(145deg, #5CB860, #388E3C);
+            }
+            
+            .select-referee-btn:active {
+                transform: translateY(1px);
+                box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+            }
+            
+            .reset-referees-btn {
+                padding: 10px 15px;
+                font-size: 14px;
+                font-weight: bold;
+                text-transform: uppercase;
+                background: linear-gradient(145deg, #F44336, #C62828);
+                color: white;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3), 0 0 20px rgba(244, 67, 54, 0.2);
+                letter-spacing: 1px;
+                clip-path: polygon(
+                    0 10px,
+                    10px 0,
+                    calc(100% - 10px) 0,
+                    100% 10px,
+                    100% calc(100% - 10px),
+                    calc(100% - 10px) 100%,
+                    10px 100%,
+                    0 calc(100% - 10px)
+                );
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 70%;
+                align-self: center;
+            }
+            
+            .reset-referees-btn:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+                background: linear-gradient(145deg, #FF5252, #D32F2F);
+            }
+            
+            .reset-referees-btn:active {
+                transform: translateY(1px);
+                box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+            }
+            
+            .selected-referees-container {
+                background: rgba(0, 0, 0, 0.7);
+                border-radius: 8px;
+                padding: 10px;
+                width: 100%;
+                backdrop-filter: blur(5px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+                margin-top: 5px;
+            }
+            
+            .selected-referees-title {
+                color: #00ffff;
+                font-size: 14px;
+                text-align: center;
+                margin-bottom: 8px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                font-weight: bold;
+                border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+                padding-bottom: 5px;
+                text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+            }
+            
+            .selected-referees {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                justify-content: center;
+            }
+            
+            .selected-referee {
+                display: flex;
+                align-items: center;
+                background: rgba(0, 0, 0, 0.5);
+                padding: 5px 8px;
+                border-radius: 5px;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                color: white;
+                font-size: 12px;
+                transition: all 0.3s ease;
+            }
+            
+            .selected-referee:hover {
+                background: rgba(0, 0, 0, 0.7);
+                border-color: rgba(0, 255, 255, 0.4);
+                transform: scale(1.05);
+            }
+            
+            .selected-referee img {
+                width: 35px;
+                height: 35px;
+                border-radius: 50%;
+                margin-right: 8px;
+                object-fit: cover;
+                border: 1px solid rgba(0, 255, 255, 0.3);
+            }
+            
+            .referee-avatar {
+                width: 130px;
+                height: 130px;
+                border-radius: 50%;
+                margin: 0 auto 15px auto;
+                object-fit: cover;
+                border: 3px solid rgba(0, 255, 255, 0.5);
+                box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+            }
+
+            /* Cross button style for reveal popup */
+            .cross-button {
+                position: absolute;
+                top: 15px;
+                right: 15px;
+                width: 30px;
+                height: 30px;
+                border-radius: 50%;
+                background: rgba(0, 0, 0, 0.3);
+                border: 1px solid rgba(0, 255, 255, 0.3);
+                color: #00ffff;
+                font-size: 18px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+            
+            .cross-button:hover {
+                background: rgba(0, 0, 0, 0.5);
+                transform: rotate(90deg);
+            }
+            
+            .reveal-name {
+                font-size: 38px;
+                color: #00ffff;
+                font-weight: bold;
+                margin: 30px 0;
+                text-shadow: 0 0 15px rgba(0, 255, 255, 0.7);
+                letter-spacing: 1px;
+                text-align: center;
+                animation: textGlow 2s ease-in-out infinite alternate;
+            }
+
+            @keyframes textGlow {
+                from {
+                    text-shadow: 0 0 15px rgba(0, 255, 255, 0.7);
+                }
+                to {
+                    text-shadow: 0 0 30px rgba(0, 255, 255, 0.9);
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <!-- Main Content Wrapper -->
+        <div class="main-content" id="mainContent">
+            <!-- All-time Stats Panel -->
+            <div class="all-time-stats">
+                <h2 class="stats-title">All-Time Stats</h2>
+                <div class="stats-container">
+                    <div class="stats-card" data-player="aziz2">
+                        <div class="stats-player-name">Aziz</div>
+                        <div class="stats-details">
+                            <div class="stats-item">
+                                <span class="stats-label">TOTAL WINS</span>
+                                <span class="stats-value wins">0</span>
+                            </div>
+                            <div class="stats-item">
+                                <span class="stats-label">TOTAL SCORE</span>
+                                <span class="stats-value score">0</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stats-card" data-player="aman">
+                        <div class="stats-player-name">Aman</div>
+                        <div class="stats-details">
+                            <div class="stats-item">
+                                <span class="stats-label">TOTAL WINS</span>
+                                <span class="stats-value wins">0</span>
+                            </div>
+                            <div class="stats-item">
+                                <span class="stats-label">TOTAL SCORE</span>
+                                <span class="stats-value score">0</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stats-card" data-player="vish">
+                        <div class="stats-player-name">Vish</div>
+                        <div class="stats-details">
+                            <div class="stats-item">
+                                <span class="stats-label">TOTAL WINS</span>
+                                <span class="stats-value wins">0</span>
+                            </div>
+                            <div class="stats-item">
+                                <span class="stats-label">TOTAL SCORE</span>
+                                <span class="stats-value score">0</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stats-card" data-player="amesh">
+                        <div class="stats-player-name">Amesh</div>
+                        <div class="stats-details">
+                            <div class="stats-item">
+                                <span class="stats-label">TOTAL WINS</span>
+                                <span class="stats-value wins">0</span>
+                            </div>
+                            <div class="stats-item">
+                                <span class="stats-label">TOTAL SCORE</span>
+                                <span class="stats-value score">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="last-updated">Last Updated: Never</div>
+            </div>
+
+            <!-- Frame Viewer -->
+            <div class="frame-viewer">
+                <h2 class="frame-title">Guess The Frame</h2>
+                <div class="frame-container">
+                    <img class="frame-image blurred" src="" alt="Frame">
+                    <button class="frame-open-btn">OPEN</button>
+                    <div class="frame-timer">15</div>
+                    <button class="frame-nav frame-prev">←</button>
+                    <button class="frame-nav frame-next">→</button>
+                    <div class="frame-counter">1 / 1</div>
+                    <button class="reveal-button">Reveal</button>
+                    <div class="image-name"></div>
+                </div>
+            </div>
+
+            <!-- Section Navigation -->
+            <div class="section-navigation">
+                <button class="section-btn active" data-section="frame">Guess The Frame</button>
+                <button class="section-btn" data-section="dialogue">Guess The Dialogue</button>
+                <button class="section-btn" data-section="eyes">Guess The Eyes</button>
+                <button class="section-btn" data-section="curves">Guess The Curves</button>
+            </div>
+
+            <!-- Scoreboard -->
+            <div class="scoreboard">
+                <h2 class="scoreboard-title">SCORE BOARD</h2>
+                <div class="score-container">
+                    <div class="score-card" data-player="aziz2">
+                        <div class="player-info">
+                            <span class="player-name">Aziz</span>
+                            <span class="player-score">0</span>
+                        </div>
+                        <div class="score-controls">
+                            <button class="score-btn plus" onclick="updateScore('aziz2', 10)">+</button>
+                            <button class="score-btn minus" onclick="updateScore('aziz2', -10)">−</button>
+                        </div>
+                    </div>
+                    <div class="score-card" data-player="aman">
+                        <div class="player-info">
+                            <span class="player-name">Aman</span>
+                            <span class="player-score">0</span>
+                        </div>
+                        <div class="score-controls">
+                            <button class="score-btn plus" onclick="updateScore('aman', 10)">+</button>
+                            <button class="score-btn minus" onclick="updateScore('aman', -10)">−</button>
+                        </div>
+                    </div>
+                    <div class="score-card" data-player="vish">
+                        <div class="player-info">
+                            <span class="player-name">Vish</span>
+                            <span class="player-score">0</span>
+                        </div>
+                        <div class="score-controls">
+                            <button class="score-btn plus" onclick="updateScore('vish', 10)">+</button>
+                            <button class="score-btn minus" onclick="updateScore('vish', -10)">−</button>
+                        </div>
+                    </div>
+                    <div class="score-card" data-player="amesh">
+                        <div class="player-info">
+                            <span class="player-name">Amesh</span>
+                            <span class="player-score">0</span>
+                        </div>
+                        <div class="score-controls">
+                            <button class="score-btn plus" onclick="updateScore('amesh', 10)">+</button>
+                            <button class="score-btn minus" onclick="updateScore('amesh', -10)">−</button>
+                        </div>
+                    </div>
+                </div>
+                <button class="submit-score-btn" onclick="announceWinner()">Submit Scores</button>
+            </div>
+
+            <!-- Add this before the winner-popup div -->
+            <div class="referee-popup">
+                <h2 class="referee-title">Referee Selected!</h2>
+                <img class="referee-avatar" src="" alt="Referee Avatar">
+                <div class="referee-name"></div>
+                <button class="close-popup" onclick="closeRefereePopup()">OK</button>
+            </div>
+
+            <!-- Add this before the winner-popup div -->
+            <div class="reveal-popup">
+                <div class="reveal-content">
+                    <img class="reveal-image" src="" alt="Revealed Image">
+                    <div class="reveal-name"></div>
+                    <button class="cross-button" onclick="closeRevealPopup()">×</button>
+                </div>
+            </div>
+
+            <!-- Winner Popup -->
+            <div class="winner-popup">
+                <h2 class="winner-title">Winner!</h2>
+                <div class="winner-name"></div>
+                <div class="winner-score"></div>
+                <div class="creator-credit">
+                    <p>Created by Kaustubh</p>
+                    <img src="./images/QR.jpeg" alt="QR Code" class="qr-code">
+                </div>
+                <button class="close-popup" onclick="closeWinnerPopup()">Close</button>
+            </div>
+
+            <div class="ambient-glow glow-1"></div>
+            <div class="ambient-glow glow-2"></div>
+            <div class="ambient-glow glow-3"></div>
+            
+            <!-- Add the new referee selector button -->
+            <div class="referee-selector">
+                <div class="referee-buttons">
+                    <button id="select-referee-btn" class="select-referee-btn">SELECT REFEREE</button>
+                    <button id="reset-referees-btn" class="reset-referees-btn">RESET</button>
+                </div>
+                <div class="selected-referees-container">
+                    <div class="selected-referees-title">Selected Referees</div>
+                    <div id="selected-referees" class="selected-referees"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Load configuration scripts first -->
+        <script src="./images-config.js"></script>
+        <script src="./spin-config.js"></script>
+        <script src="./stats-config.js"></script>
+        <!-- Then load the main script -->
+        <script src="./script.js"></script>
+        <script>
+            // Add this to your existing scripts
+            const sections = ['frame', 'dialogue', 'eyes', 'curves'];
+            const sectionButtons = document.querySelectorAll('.section-btn');
+            const frameViewer = document.querySelector('.frame-viewer');
+            const frameImage = document.querySelector('.frame-image');
+            const frameCounter = document.querySelector('.frame-counter');
+            const frameTitle = document.querySelector('.frame-title');
+            // Commenting out to fix duplicate declaration error
+            // const revealButton = document.querySelector('.reveal-button');
+            const imageName = document.querySelector('.image-name');
+            const frameOpenBtn = document.querySelector('.frame-open-btn');
+            const frameTimer = document.querySelector('.frame-timer');
+            let timerInterval;
+            
+            let currentSection = 'frame';
+            let currentFrameIndex = 0;
+            let frameImages = [];
+            let currentImageData = null;
+
+            // Initialize the page on load
+            window.addEventListener('load', function() {
+                // Remove the call to addFixImagesButton
+                loadSectionImages('frame');
+            });
+            
+            // Add a debug mode flag
+            const DEBUG = false;
+            
+            // Enhanced check image function to try multiple path variations
+            function checkImageExists(url, callback) {
+                // Try various path variations
+                const originalUrl = url;
+                const pathVariations = [
+                    originalUrl,                              // Original path
+                    originalUrl.replace('./', '/'),           // Replace ./ with /
+                    originalUrl.replace('./', ''),            // Remove ./
+                    '/'+originalUrl.replace('./', '')         // Add leading / and remove ./
+                ];
+                
+                if (DEBUG) {
+                    console.log('🔍 Attempting to load image:', originalUrl);
+                    console.log('   Will try these variations:', pathVariations);
+                }
+                
+                let variationIndex = 0;
+                tryNextVariation();
+                
+                function tryNextVariation() {
+                    if (variationIndex >= pathVariations.length) {
+                        if (DEBUG) console.error('❌ All path variations failed for:', originalUrl);
+                        callback(false);
+                        return;
+                    }
+                    
+                    const currentPath = pathVariations[variationIndex];
+                    variationIndex++;
+                    
+                    const img = new Image();
+                    img.onload = function() {
+                        if (DEBUG) console.log('✅ Image loaded successfully:', currentPath);
+                        callback(true, currentPath);
+                    };
+                    img.onerror = function() {
+                        if (DEBUG) console.warn(`⚠️ Failed to load path variation ${variationIndex}: ${currentPath}`);
+                        // Try next variation
+                        tryNextVariation();
+                    };
+                    
+                    // Add cache-busting parameter
+                    const timestamp = new Date().getTime();
+                    const cacheBuster = currentPath.includes('?') ? `&t=${timestamp}` : `?t=${timestamp}`;
+                    img.src = currentPath + cacheBuster;
+                }
+            }
+            
+            // Add a notification function
+            function showNotification(message, duration = 3000) {
+                const notification = document.createElement('div');
+                notification.className = 'notification';
+                notification.textContent = message;
+                notification.style.position = 'fixed';
+                notification.style.top = '20px';
+                notification.style.left = '50%';
+                notification.style.transform = 'translateX(-50%)';
+                notification.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+                notification.style.color = '#00ffff';
+                notification.style.padding = '10px 20px';
+                notification.style.borderRadius = '5px';
+                notification.style.zIndex = '9999';
+                notification.style.boxShadow = '0 0 10px rgba(0, 255, 255, 0.5)';
+                notification.style.border = '1px solid #00ffff';
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.remove();
+                }, duration);
+                
+                return notification;
+            }
+            
+            // Helper function to diagnose image visibility issues
+            function diagnoseImageVisibility() {
+                console.log('----- IMAGE DEBUGGING INFORMATION -----');
+                console.log('Current section:', currentSection);
+                console.log('Images in imagesConfig:', imagesConfig);
+                console.log('frameImages array:', frameImages);
+                console.log('Current image data:', currentImageData);
+                console.log('Frame image element:', frameImage);
+                console.log('Frame image source:', frameImage.src);
+                console.log('Frame image display:', frameImage.style.display);
+                console.log('Frame image visibility:', window.getComputedStyle(frameImage).visibility);
+                console.log('Frame image opacity:', window.getComputedStyle(frameImage).opacity);
+                console.log('PlaceholderImage:', placeholderImage);
+                
+                // Check if any placeholder is visible (indicating image loading issues)
+                const usesPlaceholder = frameImage.src.includes('placeholder');
+                console.log('Image appears to use placeholder:', usesPlaceholder);
+                
+                // Check CSS classes that might affect visibility
+                console.log('CSS classes on frame image:', frameImage.className);
+                console.log('Is blurred:', frameImage.classList.contains('blurred'));
+                console.log('Has error class:', frameImage.classList.contains('error-image'));
+                
+                // Check paths used
+                console.log('Base URL of page:', window.location.origin + window.location.pathname);
+                console.log('Relative path to current image:', currentImageData ? currentImageData.src : 'none');
+                console.log('----- END OF DEBUGGING INFO -----');
+                
+                // Show notification to user with some basic info
+                showNotification(`Diagnosing image issues - check console for details`, 5000);
+                
+                // Test if the images directory is accessible
+                fetch('./images/placeholder.svg')
+                    .then(response => {
+                        if (response.ok) {
+                            console.log('✅ Placeholder image is accessible');
+                            showNotification(`Placeholder image is accessible, checking other paths...`, 3000);
+                        } else {
+                            console.error('❌ Placeholder image is not accessible:', response.status);
+                            showNotification(`Error ${response.status} accessing placeholder - check file paths`, 5000);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('❌ Fetch error accessing placeholder:', error);
+                        showNotification(`Error accessing placeholder: ${error.message}`, 5000);
+                    });
+                
+                // Try a frame image
+                if (imagesConfig && imagesConfig.frame && imagesConfig.frame.length > 0) {
+                    const frameTest = imagesConfig.frame[0].src;
+                    checkImageExists(frameTest, (success, path) => {
+                        if (success) {
+                            console.log(`✅ Test frame image loaded from: ${path}`);
+                            showNotification(`Test frame image loaded - using these paths going forward`, 3000);
+                        } else {
+                            console.error('❌ All path variations failed for test frame image');
+                            showNotification(`Could not load any test frame images - check paths`, 5000);
+                        }
+                    });
+                }
+            }
+
+            // Modified loadSectionImages function to load images from corresponding folders
+            function loadSectionImages(section) {
+                try {
+                    console.log(`Loading images for section: ${section}`);
+                    
+                    // Get images from configuration file
+                    let images = [];
+                    
+                    if (imagesConfig && imagesConfig[section] && imagesConfig[section].length > 0) {
+                        // Use images from the configuration
+                        images = imagesConfig[section];
+                        console.log(`Found ${images.length} images for ${section} section:`, images);
+                        
+                        // For empty sections, use the placeholder immediately
+                        if (images.length === 0) {
+                            console.warn(`No images configured for ${section} section. Using placeholder.`);
+                            frameImages = [
+                                { src: './images/placeholder.svg', name: `No ${section.charAt(0).toUpperCase() + section.slice(1)} Images Found` }
+                            ];
+                        } else {
+                            // Use the configured images
+                            frameImages = images;
+                        }
+                        
+                        // Reset to first image
+                        currentFrameIndex = 0;
+                        
+                        // Hide name when switching sections
+                        imageName.textContent = '';
+                        imageName.classList.remove('show');
+                        
+                        // Update display
+                        updateFrameDisplay();
+                        
+                        return;
+                    } else {
+                        // If no images in config or section doesn't exist, use placeholder
+                        console.warn(`No images found in configuration for ${section} section.`);
+                        frameImages = [
+                            { src: './images/placeholder.svg', name: `No ${section.charAt(0).toUpperCase() + section.slice(1)} Images Found` }
+                        ];
+                    }
+                    
+                    // Update the image array and display
+                    currentFrameIndex = 0;
+                    
+                    // Hide name when switching sections
+                    imageName.textContent = '';
+                    imageName.classList.remove('show');
+                    
+                    updateFrameDisplay();
+                } catch (error) {
+                    console.error(`Error loading ${section} images:`, error);
+                    frameImages = [
+                        { src: './images/placeholder.svg', name: `Error loading ${section} images: ${error.message}` }
+                    ];
+                    updateFrameDisplay();
+                }
+            }
+
+            // Modified updateFrameDisplay function with additional debugging
+            function updateFrameDisplay() {
+                console.log('Updating display:', { 
+                    section: currentSection,
+                    images: frameImages,
+                    currentIndex: currentFrameIndex 
+                });
+                
+                if (frameImages && frameImages.length > 0) {
+                    currentImageData = frameImages[currentFrameIndex];
+                    
+                    if (currentImageData && currentImageData.src) {
+                        // Show the open button and apply blur
+                        frameImage.classList.add('blurred');
+                        frameOpenBtn.style.display = 'block';
+                        
+                        // Reset any error classes
+                        frameImage.classList.remove('error-image');
+                        
+                        // Set the image source directly
+                        frameImage.src = currentImageData.src;
+                        frameImage.style.display = 'block'; // Make sure image is visible
+                        frameCounter.textContent = `${currentFrameIndex + 1} / ${frameImages.length}`;
+                        
+                        // Reset name and timer
+                        imageName.textContent = '';
+                        imageName.classList.remove('show');
+                        clearInterval(timerInterval);
+                        frameTimer.classList.remove('show');
+                    } else {
+                        console.error('Invalid image data:', currentImageData);
+                        frameImage.src = './images/placeholder.svg';
+                        frameImage.classList.add('error-image');
+                        frameCounter.textContent = 'Invalid image data';
+                        currentImageData = null;
+                    }
+                } else {
+                    console.log('No images available for section:', currentSection);
+                    frameImage.src = './images/placeholder.svg';
+                    frameImage.classList.add('error-image');
+                    frameCounter.textContent = 'No images available';
+                    currentImageData = null;
+                }
+            }
+
+            // Modify the startTimer and resetFrame functions
+            function startTimer() {
+                let timeLeft = 15;
+                frameTimer.textContent = timeLeft;
+                frameTimer.classList.add('show');
+
+                timerInterval = setInterval(() => {
+                    timeLeft--;
+                    frameTimer.textContent = timeLeft;
+
+                    if (timeLeft <= 0) {
+                        clearInterval(timerInterval);
+                        frameTimer.classList.remove('show');
+                    }
+                }, 1000);
+            }
+
+            function resetFrame() {
+                clearInterval(timerInterval);
+                frameTimer.classList.remove('show');
+                frameImage.classList.add('blurred');
+                frameOpenBtn.style.display = 'block';
+            }
+
+            // Update the navigation button handlers
+            document.querySelector('.frame-prev').addEventListener('click', () => {
+                if (currentFrameIndex > 0) {
+                    currentFrameIndex--;
+                    updateFrameDisplay();
+                }
+            });
+
+            document.querySelector('.frame-next').addEventListener('click', () => {
+                if (currentFrameIndex < frameImages.length - 1) {
+                    currentFrameIndex++;
+                    updateFrameDisplay();
+                }
+            });
+
+            // Section buttons
+            sectionButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const section = button.dataset.section;
+                    console.log('Switching to section:', section);
+                    
+                    currentSection = section;
+                    
+                    // Update active button
+                    sectionButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+
+                    // Update title
+                    frameTitle.textContent = `Guess The ${section.charAt(0).toUpperCase() + section.slice(1)}`;
+                    
+                    // Load images for new section
+                    loadSectionImages(section);
+                });
+            });
+
+            // Reveal button functionality
+            // Using direct querySelector since revealButton variable is commented out
+            document.querySelector('.reveal-button')?.addEventListener('click', () => {
+                console.log('Reveal button clicked');
+                if (currentImageData && currentImageData.name) {
+                    // Create glitch overlay
+                    const overlay = document.createElement('div');
+                    overlay.className = 'glitch-overlay';
+                    document.body.appendChild(overlay);
+                    
+                    // Remove overlay after animation
+                    setTimeout(() => overlay.remove(), 1000);
+                    
+                    // Get clean filename for display based on section
+                    let displayName = currentImageData.name;
+                    
+                    // Clean up the filename based on section
+                    if (currentSection === 'dialogue' || currentSection === 'eyes') {
+                        // For dialogue and eyes sections, use the name directly from currentImageData
+                        displayName = currentImageData.name;
+                    } else {
+                        // For other sections, clean up the path if needed
+                        if (displayName.includes('/')) {
+                            displayName = displayName.split('/').pop();
+                        }
+                        if (displayName.includes('.')) {
+                            displayName = displayName.split('.')[0];
+                        }
+                    }
+                    
+                    // Set up the popup
+                    const popup = document.querySelector('.reveal-popup');
+                    const image = popup.querySelector('.reveal-image');
+                    const nameElement = popup.querySelector('.reveal-name');
+                    
+                    // Clear any existing content
+                    nameElement.textContent = '';
+                    image.style.display = 'none';
+                    
+                    // Remove any previously created revealed-name elements
+                    const existingNames = popup.querySelectorAll('.revealed-name');
+                    existingNames.forEach(element => element.remove());
+                    
+                    // Handle different sections
+                    if (currentSection === 'dialogue' || currentSection === 'frame') {
+                        // For dialogue and frame sections, only show the name
+                        image.style.display = 'none';
+                        nameElement.textContent = displayName;
+                        nameElement.style.fontSize = '36px';
+                        nameElement.style.color = '#00ffff';
+                        nameElement.style.margin = '30px 0';
+                        nameElement.style.textShadow = '0 0 15px rgba(0, 255, 255, 0.7), 0 0 30px rgba(0, 255, 255, 0.5), 0 0 45px rgba(0, 255, 255, 0.3)';
+                    } else if (currentSection === 'curves' || currentSection === 'eyes') {
+                        // For curves and eyes sections, show both image and name
+                        if (currentImageData.revealSrc) {
+                            // First check if the reveal image exists
+                            const revealImg = new Image();
+                            revealImg.onload = function() {
+                                // If the image loads, display it
+                                image.src = currentImageData.revealSrc;
+                                image.style.display = 'block';
+                                nameElement.textContent = displayName;
+                                nameElement.style.fontSize = '36px';
+                                nameElement.style.color = '#00ffff';
+                                nameElement.style.margin = '30px 0';
+                                nameElement.style.textShadow = '0 0 15px rgba(0, 255, 255, 0.7), 0 0 30px rgba(0, 255, 255, 0.5), 0 0 45px rgba(0, 255, 255, 0.3)';
+                            };
+                            revealImg.onerror = function() {
+                                // If the image fails to load, show the original image
+                                image.src = currentImageData.src;
+                                image.style.display = 'block';
+                                nameElement.textContent = displayName;
+                                nameElement.style.fontSize = '36px';
+                                nameElement.style.color = '#00ffff';
+                                nameElement.style.margin = '30px 0';
+                                nameElement.style.textShadow = '0 0 15px rgba(0, 255, 255, 0.7), 0 0 30px rgba(0, 255, 255, 0.5), 0 0 45px rgba(0, 255, 255, 0.3)';
+                            };
+                            revealImg.src = currentImageData.revealSrc;
+                        } else {
+                            // If no reveal image, use the original image
+                            image.src = currentImageData.src;
+                            image.style.display = 'block';
+                            nameElement.textContent = displayName;
+                            nameElement.style.fontSize = '36px';
+                            nameElement.style.color = '#00ffff';
+                            nameElement.style.margin = '30px 0';
+                            nameElement.style.textShadow = '0 0 15px rgba(0, 255, 255, 0.7), 0 0 30px rgba(0, 255, 255, 0.5), 0 0 45px rgba(0, 255, 255, 0.3)';
+                        }
+                    }
+                    
+                    // Play glitch sound effect
+                    const audio = new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU');
+                    audio.volume = 0.3;
+                    audio.play().catch(e => console.log('Audio play failed:', e));
+                    
+                    // Show the popup
+                    popup.classList.add('show');
+                } else {
+                    console.log('No image data or name available');
+                }
+            });
+
+            // Update closeRevealPopup function to handle all section types
+            function closeRevealPopup() {
+                const popup = document.querySelector('.reveal-popup');
+                popup.classList.remove('show');
+            }
+
+            // Initialize scores in localStorage if they don't exist
+            if (!localStorage.getItem('playerScores')) {
+                const initialScores = {
+                    'aziz2': 0,
+                    'aman': 0,
+                    'vish': 0,
+                    'amesh': 0
+                };
+                localStorage.setItem('playerScores', JSON.stringify(initialScores));
+            }
+
+            // Initialize all-time stats in localStorage if they don't exist
+            if (!localStorage.getItem('allTimeStats')) {
+                localStorage.setItem('allTimeStats', JSON.stringify(statsConfig));
+            }
+
+            // Load all-time stats from localStorage and update UI
+            function loadAllTimeStats() {
+                const stats = JSON.parse(localStorage.getItem('allTimeStats')) || statsConfig;
+                
+                Object.keys(stats).forEach(player => {
+                    // Update wins
+                    const winsElement = document.querySelector(`[data-player="${player}"] .stats-value.wins`);
+                    if (winsElement) {
+                        winsElement.textContent = stats[player].wins;
+                    }
+                    
+                    // Update total score
+                    const scoreElement = document.querySelector(`[data-player="${player}"] .stats-value.score`);
+                    if (scoreElement) {
+                        scoreElement.textContent = stats[player].totalScore;
+                        
+                        // Add animation to highlight the score
+                        scoreElement.classList.remove('score-updated');
+                        void scoreElement.offsetWidth; // Trigger reflow
+                        scoreElement.classList.add('score-updated');
+                    }
+                });
+                
+                // Update last updated timestamp
+                const lastUpdated = document.querySelector('.last-updated');
+                if (lastUpdated) {
+                    lastUpdated.textContent = `Last Updated: ${new Date().toLocaleString()}`;
+                }
+            }
+            
+            // Update all-time stats for a player
+            function updateAllTimeStats(player, points, isWinner = false) {
+                const stats = JSON.parse(localStorage.getItem('allTimeStats')) || statsConfig;
+                
+                // Initialize player stats if they don't exist
+                if (!stats[player]) {
+                    stats[player] = { wins: 0, totalScore: 0 };
+                }
+                
+                // Update total score
+                stats[player].totalScore += points;
+                
+                // Update wins if this player won
+                if (isWinner) {
+                    stats[player].wins += 1;
+                }
+                
+                // Save to localStorage
+                localStorage.setItem('allTimeStats', JSON.stringify(stats));
+                
+                // Update the UI
+                loadAllTimeStats();
+            }
+
+            // Load scores from localStorage
+            function loadScores() {
+                const scores = JSON.parse(localStorage.getItem('playerScores'));
+                Object.keys(scores).forEach(player => {
+                    const scoreElement = document.querySelector(`[data-player="${player}"] .player-score`);
+                    if (scoreElement) {
+                        scoreElement.textContent = scores[player];
+                    }
+                });
+            }
+
+            // Update score function
+            function updateScore(player, points) {
+                const scores = JSON.parse(localStorage.getItem('playerScores'));
+                scores[player] = (scores[player] || 0) + points;
+                
+                // Update localStorage
+                localStorage.setItem('playerScores', JSON.stringify(scores));
+                
+                // Update display
+                const scoreElement = document.querySelector(`[data-player="${player}"] .player-score`);
+                if (scoreElement) {
+                    scoreElement.textContent = scores[player];
+                    scoreElement.classList.remove('score-updated');
+                    void scoreElement.offsetWidth; // Trigger reflow
+                    scoreElement.classList.add('score-updated');
+                }
+                
+                // Update all-time stats with the score change
+                updateAllTimeStats(player, points);
+
+                // Play audio when points are added (plus button)
+                if (points > 0) {
+                    // Get the player name without the number
+                    const playerName = player.replace('2', '').toLowerCase();
+                    const audio = new Audio(`./audio/${playerName}.wav`);
+                    audio.volume = 0.6; // Set volume to 60%
+                    audio.play().catch(e => console.log('Audio play failed:', e));
+                }
+
+                // Show notification
+                const pointText = points > 0 ? `+${points}` : points;
+                        const notification = document.createElement('div');
+                        notification.className = 'notification';
+                notification.textContent = `${player.charAt(0).toUpperCase() + player.slice(1)}: ${pointText} points!`;
+                        document.body.appendChild(notification);
+                        
+                        setTimeout(() => {
+                            notification.remove();
+                        }, 2000);
+                    }
+
+            // Load scores when page loads
+            loadScores();
+            
+            // Load all-time stats when page loads
+            loadAllTimeStats();
+
+            // Load frame section by default when page loads
+            loadSectionImages('frame');
+
+            // Update the open button click handler
+            frameOpenBtn.addEventListener('click', function() {
+                console.log('Open button clicked');
+                frameImage.classList.remove('blurred');
+                frameOpenBtn.style.display = 'none';
+                startTimer();
+            });
+
+            // Add these functions in the script section
+            function announceWinner() {
+                const scores = JSON.parse(localStorage.getItem('playerScores'));
+                let maxScore = -Infinity;
+                let winner = '';
+                
+                // Find the winner
+                Object.entries(scores).forEach(([player, score]) => {
+                    if (score > maxScore) {
+                        maxScore = score;
+                        winner = player;
+                    }
+                });
+
+                // Format winner name
+                const displayName = winner.charAt(0).toUpperCase() + winner.slice(1).replace('2', '');
+
+                // Update all-time stats to record the win
+                updateAllTimeStats(winner, 0, true);
+                
+                // Show winner popup
+                const popup = document.querySelector('.winner-popup');
+                const winnerName = popup.querySelector('.winner-name');
+                const winnerScore = popup.querySelector('.winner-score');
+                
+                winnerName.textContent = displayName;
+                winnerScore.textContent = `Score: ${maxScore}`;
+                
+                // Make the popup visible
+                popup.classList.add('show');
+                
+                // Create confetti effect
+                createConfetti();
+            }
+            
+            // Add function to close the winner popup
+            function closeWinnerPopup() {
+                const popup = document.querySelector('.winner-popup');
+                popup.classList.remove('show');
+            }
+            
+            // Function to create confetti effect when winner is announced
+            function createConfetti() {
+                const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
+                
+                for (let i = 0; i < 100; i++) {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.animationDuration = Math.random() * 2 + 2 + 's';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    
+                    document.body.appendChild(confetti);
+                    
+                    // Remove confetti after animation
+                    setTimeout(() => {
+                        confetti.remove();
+                    }, 4000);
+                }
+            }
+            
+            // Add function to close the referee popup
+            function closeRefereePopup() {
+                const popup = document.querySelector('.referee-popup');
+                popup.classList.remove('show');
+            }
+            
+            // Spin Machine Functionality
+            const spinButton = document.querySelector('.spin-button');
+            const slotReel = document.querySelector('.slot-reel');
+            // Since isSpinning is already defined in script.js, don't redeclare it here
+            
+            // Function to spin the slot machine
+            function spinSlotMachine() {
+                if (isSpinning) return;
+                
+                // Check if there are any players left to select
+                if (spinConfig.players.length === 0) {
+                    showNotification("All referees have been selected!", 3000);
+                    return;
+                }
+                
+                isSpinning = true;
+                spinButton.disabled = true;
+                
+                // Play spinning sound
+                const spinSound = new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU');
+                spinSound.volume = 0.3;
+                spinSound.play().catch(e => console.log('Audio play failed:', e));
+                
+                // Add spinning animation to the reel
+                slotReel.style.transition = 'none';
+                slotReel.style.transform = 'translateY(0)';
+                
+                // Force reflow to make sure the transition reset takes effect
+                void slotReel.offsetWidth;
+                
+                // Set up the spinning animation
+                slotReel.style.transition = 'transform 3s cubic-bezier(0.1, 0.7, 0.2, 1)';
+                
+                // Calculate a random position to land on one of the available players
+                const itemHeight = 300; // Same height as defined in the slot-image-container
+                const numberOfPlayers = spinConfig.players.length;
+                const randomOffset = Math.floor(Math.random() * numberOfPlayers);
+                const spinDistance = -((Math.floor(Math.random() * 5) + 10) * itemHeight + randomOffset * itemHeight);
+                slotReel.style.transform = `translateY(${spinDistance}px)`;
+                
+                // Show the referee popup after spinning
+                setTimeout(() => {
+                    // Get the selected player based on the final position
+                    const finalPosition = Math.abs(spinDistance) % (numberOfPlayers * itemHeight);
+                    const selectedIndex = Math.floor(finalPosition / itemHeight) % numberOfPlayers;
+                    const selectedPlayer = spinConfig.players[selectedIndex];
+                    
+                    // Display the referee popup with the randomly selected player
+                    const popup = document.querySelector('.referee-popup');
+                    const refereeName = popup.querySelector('.referee-name');
+                    
+                    refereeName.textContent = selectedPlayer.name;
+                    popup.classList.add('show');
+                    
+                    // Find all instances of the selected player in the reel and fade them out
+                    const allPlayerImages = document.querySelectorAll('.slot-player-image');
+                    allPlayerImages.forEach(img => {
+                        if (img.dataset.playerId === selectedPlayer.id) {
+                            // Create a flash effect before disappearing
+                            img.style.transition = 'all 0.5s ease';
+                            img.style.filter = 'brightness(3)';
+                            img.style.boxShadow = '0 0 20px rgba(0, 255, 255, 0.8)';
+                            
+                            // After the flash, fade out the image
+                            setTimeout(() => {
+                                img.style.opacity = '0';
+                                img.style.transform = 'scale(0.5)';
+                                img.style.filter = 'brightness(1)';
+                                
+                                // Add a glitch effect to the container
+                                const container = img.parentElement;
+                                container.style.backgroundImage = 'linear-gradient(45deg, rgba(0, 255, 255, 0.1) 25%, transparent 25%, transparent 50%, rgba(0, 255, 255, 0.1) 50%, rgba(0, 255, 255, 0.1) 75%, transparent 75%, transparent)';
+                                container.style.backgroundSize = '10px 10px';
+                                container.style.animation = 'glitch-background 0.2s linear infinite';
+                            }, 300);
+                        }
+                    });
+                    
+                    // Add a style for the glitch effect if it doesn't exist
+                    if (!document.querySelector('#glitch-animation-style')) {
+                        const style = document.createElement('style');
+                        style.id = 'glitch-animation-style';
+                        style.textContent = `
+                            @keyframes glitch-background {
+                                0% { background-position: 0 0; }
+                                100% { background-position: 10px 10px; }
+                            }
+                        `;
+                        document.head.appendChild(style);
+                    }
+                    
+                    // Remove the selected player from the configuration
+                    spinConfig.players.splice(selectedIndex, 1);
+                    
+                    // Update the stored config if needed
+                    if (typeof localStorage !== 'undefined') {
+                        localStorage.setItem('spinConfigPlayers', JSON.stringify(spinConfig.players));
+                    }
+                    
+                    // Reinitialize the slot machine with the remaining players after a delay
+                    // to allow time for the visual effects to complete
+                    setTimeout(() => {
+                        initSlotMachine();
+                        
+                        // Update the spin button text or disable it if no more players
+                        if (spinConfig.players.length === 0) {
+                            spinButton.textContent = "NO MORE PLAYERS";
+                            spinButton.disabled = true;
+                        }
+                        
+                        // Reset the spin button
+                        isSpinning = false;
+                        spinButton.disabled = spinConfig.players.length === 0;
+                    }, 1500);
+                    
+                    // Play winner sound
+                    const winnerSound = new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU');
+                    winnerSound.volume = 0.5;
+                    winnerSound.play().catch(e => console.log('Audio play failed:', e));
+                }, 3500);
+            }
+            
+            // Initialize the slot machine with images
+            function initSlotMachine() {
+                // Clear any existing content
+                slotReel.innerHTML = '';
+                
+                // Check if we have stored players in localStorage
+                if (typeof localStorage !== 'undefined') {
+                    const storedPlayers = localStorage.getItem('spinConfigPlayers');
+                    if (storedPlayers) {
+                        // Use the stored player config
+                        spinConfig.players = JSON.parse(storedPlayers);
+                    }
+                }
+                
+                // Define a fallback image to use if the player image fails to load
+                const placeholderImageSrc = './images/placeholder.svg';
+                
+                // Using our spin configuration to include all players
+                if (spinConfig.players && spinConfig.players.length > 0) {
+                    // Create multiple instances of the available players to fill the reel
+                    for (let i = 0; i < 20; i++) {
+                        // We're cycling through all available players
+                        const playerIndex = i % spinConfig.players.length;
+                        const playerConfig = spinConfig.players[playerIndex];
+                        
+                        // Create the image element
+                        const imgContainer = document.createElement('div');
+                        imgContainer.className = 'slot-image-container';
+                        
+                        // Create image element
+                        const img = document.createElement('img');
+                        img.alt = playerConfig.name;
+                        img.className = 'slot-player-image';
+                        img.dataset.playerId = playerConfig.id;
+                        
+                        // Add error handling for images
+                        img.onerror = function() {
+                            console.error(`Failed to load image: ${playerConfig.image} for player: ${playerConfig.name}`);
+                            this.src = placeholderImageSrc;
+                            this.style.border = '2px solid red';
+                            
+                            // Add a warning label
+                            const warning = document.createElement('div');
+                            warning.textContent = `Image not found: ${playerConfig.image}`;
+                            warning.style.position = 'absolute';
+                            warning.style.bottom = '5px';
+                            warning.style.left = '0';
+                            warning.style.right = '0';
+                            warning.style.backgroundColor = 'rgba(255, 0, 0, 0.7)';
+                            warning.style.color = 'white';
+                            warning.style.padding = '5px';
+                            warning.style.fontSize = '12px';
+                            warning.style.textAlign = 'center';
+                            imgContainer.appendChild(warning);
+                        };
+                        
+                        // Set the image source after adding the error handler
+                        img.src = playerConfig.image;
+                        
+                        // Add styling to the image
+                        img.style.width = '100%';
+                        img.style.height = '100%';
+                        img.style.objectFit = 'contain';
+                        
+                        // Add styling to the container
+                        imgContainer.style.width = '100%';
+                        imgContainer.style.height = '300px';
+                        imgContainer.style.display = 'flex';
+                        imgContainer.style.alignItems = 'center';
+                        imgContainer.style.justifyContent = 'center';
+                        imgContainer.style.position = 'relative'; // For absolute positioning of warnings
+                        
+                        // Add image to container and container to reel
+                        imgContainer.appendChild(img);
+                        slotReel.appendChild(imgContainer);
+                    }
+                    
+                    console.log(`Slot machine initialized with ${spinConfig.players.length} players`);
+                    console.log('Player images:', spinConfig.players.map(p => p.image).join(', '));
+                    
+                    // Update the spin button state
+                    spinButton.disabled = spinConfig.players.length === 0;
+                    spinButton.textContent = spinConfig.players.length > 0 ? "SPIN" : "NO MORE PLAYERS";
+                } else {
+                    console.error('No players defined in spin configuration');
+                    // Disable the spin button if no players
+                    spinButton.disabled = true;
+                    spinButton.textContent = "NO MORE PLAYERS";
+                }
+            }
+
+            // Add a reset button to the slot machine section
+            function addResetButton() {
+                // Check if reset button already exists
+                if (!document.querySelector('.reset-spin-button')) {
+                    const resetButton = document.createElement('button');
+                    resetButton.className = 'reset-spin-button';
+                    resetButton.textContent = 'RESET REFEREES';
+                    resetButton.style.width = '100%';
+                    resetButton.style.padding = '10px';
+                    resetButton.style.marginTop = '10px';
+                    resetButton.style.fontFamily = 'monospace';
+                    resetButton.style.fontSize = '16px';
+                    resetButton.style.fontWeight = 'bold';
+                    resetButton.style.color = '#ff5555';
+                    resetButton.style.background = 'rgba(0, 0, 0, 0.8)';
+                    resetButton.style.border = '2px solid #ff5555';
+                    resetButton.style.clipPath = 'polygon(0 10px, 10px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px))';
+                    resetButton.style.cursor = 'pointer';
+                    resetButton.style.transition = 'all 0.3s ease';
+                    resetButton.style.textShadow = '0 0 10px #ff5555';
+                    
+                    // Add hover styles
+                    resetButton.addEventListener('mouseover', function() {
+                        this.style.color = '#fff';
+                        this.style.borderColor = '#fff';
+                        this.style.boxShadow = '0 0 20px rgba(255, 85, 85, 0.5), inset 0 0 20px rgba(255, 85, 85, 0.5)';
+                        this.style.transform = 'translateY(-2px)';
+                    });
+                    
+                    resetButton.addEventListener('mouseout', function() {
+                        this.style.color = '#ff5555';
+                        this.style.borderColor = '#ff5555';
+                        this.style.boxShadow = 'none';
+                        this.style.transform = 'translateY(0)';
+                    });
+                    
+                    // Add click handler to reset the spin machine
+                    resetButton.addEventListener('click', function() {
+                        // Reset the spinConfig to its original state (from the spin-config.js file)
+                        fetch('./spin-config.js')
+                            .then(response => response.text())
+                            .then(text => {
+                                // Try to extract the players array using a regex
+                                const playersMatch = text.match(/players\s*:\s*\[([\s\S]*?)\]/);
+                                if (playersMatch && playersMatch[1]) {
+                                    try {
+                                        // Clear localStorage
+                                        localStorage.removeItem('spinConfigPlayers');
+                                        
+                                        // Reload the original config
+                                        if (typeof originalSpinConfig !== 'undefined') {
+                                            spinConfig.players = [...originalSpinConfig.players];
+                                        } else {
+                                            // If we can't access the original, reload the page
+                                            window.location.reload();
+                                            return;
+                                        }
+                                        
+                                        // Reinitialize the slot machine
+                                        initSlotMachine();
+                                        
+                                        // Reset button state
+                                        spinButton.disabled = false;
+                                        spinButton.textContent = "SPIN";
+                                        
+                                        // Show notification
+                                        showNotification("Referee selection has been reset!", 2000);
+                                    } catch (error) {
+                                        console.error('Error parsing players:', error);
+                                        // Fallback to reloading the page
+                                        window.location.reload();
+                                    }
+                                } else {
+                                    // Fallback to reloading the page
+                                    window.location.reload();
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error loading spin-config.js:', error);
+                                // Fallback to reloading the page
+                                window.location.reload();
+                            });
+                    });
+                    
+                    // Add the reset button to the slot machine
+                    const slotMachine = document.querySelector('.slot-machine');
+                    slotMachine.appendChild(resetButton);
+                }
+            }
+
+            // Keep a copy of the original spin config
+            let originalSpinConfig = null;
+
+            // Initialize the slot machine when the page loads
+            window.addEventListener('load', function() {
+                // Store the original configuration
+                if (spinConfig && spinConfig.players) {
+                    originalSpinConfig = { 
+                        players: JSON.parse(JSON.stringify(spinConfig.players)) 
+                    };
+                }
+                
+                initSlotMachine();
+                addResetButton();
+            });
+            
+            // Referee Selector Functionality
+            document.addEventListener('DOMContentLoaded', function() {
+                const selectRefereeBtn = document.getElementById('select-referee-btn');
+                const resetRefereesBtn = document.getElementById('reset-referees-btn');
+                const selectedRefereesContainer = document.getElementById('selected-referees');
+                
+                // Initialize the selected referees array in localStorage if it doesn't exist
+                if (!localStorage.getItem('selectedReferees')) {
+                    localStorage.setItem('selectedReferees', JSON.stringify([]));
+                }
+                
+                // Update the UI with previously selected referees
+                updateSelectedRefereesUI();
+                
+                // Add click handler for the select referee button
+                selectRefereeBtn.addEventListener('click', function() {
+                    selectRandomReferee();
+                });
+                
+                // Add click handler for the reset button
+                resetRefereesBtn.addEventListener('click', function() {
+                    resetSelectedReferees();
+                });
+                
+                // Function to select a random referee
+                function selectRandomReferee() {
+                    // Define our own referee list with correct image paths
+                    const allReferees = [
+                        { 
+                            name: 'Aziz',
+                            image: './images/aziz.png',
+                            id: 'aziz2'
+                        },
+                        { 
+                            name: 'Aman',
+                            image: './images/aman.png',
+                            id: 'aman'
+                        },
+                        { 
+                            name: 'Vish',
+                            image: './images/vish.png',
+                            id: 'vish'
+                        },
+                        { 
+                            name: 'Amesh',
+                            image: './images/amesh.png',
+                            id: 'amesh'
+                        }
+                    ];
+                    
+                    const selectedReferees = JSON.parse(localStorage.getItem('selectedReferees') || '[]');
+                    
+                    // Filter out already selected referees
+                    const availableReferees = allReferees.filter(referee => 
+                        !selectedReferees.some(selected => selected.id === referee.id)
+                    );
+                    
+                    // If all referees have been selected, show notification
+                    if (availableReferees.length === 0) {
+                        showNotification("All referees have been selected! Resetting selection.", 3000);
+                        localStorage.setItem('selectedReferees', JSON.stringify([]));
+                        updateSelectedRefereesUI();
+                        return;
+                    }
+                    
+                    // Select a random referee from available ones
+                    const randomIndex = Math.floor(Math.random() * availableReferees.length);
+                    const selectedReferee = availableReferees[randomIndex];
+                    
+                    // Create glitch overlay animation effect
+                    const overlay = document.createElement('div');
+                    overlay.className = 'glitch-overlay';
+                    document.body.appendChild(overlay);
+                    
+                    // Remove overlay after animation
+                    setTimeout(() => overlay.remove(), 1000);
+                    
+                    // Play selection sound
+                    const selectionSound = new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU');
+                    selectionSound.volume = 0.3;
+                    selectionSound.play().catch(e => console.log('Audio play failed:', e));
+                    
+                    // Update the referee popup
+                    const popup = document.querySelector('.referee-popup');
+                    const refereeName = popup.querySelector('.referee-name');
+                    const refereeAvatar = popup.querySelector('.referee-avatar');
+                    
+                    // Set the referee name and avatar
+                    refereeName.textContent = selectedReferee.name;
+                    refereeAvatar.src = selectedReferee.image;
+                    
+                    // Make sure images that fail to load get a fallback
+                    refereeAvatar.onerror = function() {
+                        this.src = './images/placeholder.svg';
+                        this.style.border = '2px solid red';
+                    };
+                    
+                    // Show the popup
+                    popup.classList.add('show');
+                    
+                    // Add to selected referees
+                    selectedReferees.push(selectedReferee);
+                    localStorage.setItem('selectedReferees', JSON.stringify(selectedReferees));
+                    
+                    // Update the UI
+                    updateSelectedRefereesUI();
+                }
+                
+                // Function to update the UI with selected referees
+                function updateSelectedRefereesUI() {
+                    const selectedReferees = JSON.parse(localStorage.getItem('selectedReferees') || '[]');
+                    selectedRefereesContainer.innerHTML = '';
+                    
+                    if (selectedReferees.length === 0) {
+                        selectedRefereesContainer.innerHTML = '<div style="color:#aaa;text-align:center;font-style:italic;font-size:12px;">No referees selected yet</div>';
+                        return;
+                    }
+                    
+                    selectedReferees.forEach(referee => {
+                        const refereeElement = document.createElement('div');
+                        refereeElement.className = 'selected-referee';
+                        
+                        const refereeImg = document.createElement('img');
+                        refereeImg.src = referee.image;
+                        refereeImg.alt = referee.name;
+                        refereeImg.onerror = function() {
+                            this.src = './images/placeholder.svg';
+                        };
+                        
+                        const refereeName = document.createElement('span');
+                        refereeName.textContent = referee.name;
+                        
+                        refereeElement.appendChild(refereeImg);
+                        refereeElement.appendChild(refereeName);
+                        selectedRefereesContainer.appendChild(refereeElement);
+                    });
+                }
+                
+                // Function to reset selected referees
+                function resetSelectedReferees() {
+                    // Create glitch overlay animation effect
+                    const overlay = document.createElement('div');
+                    overlay.className = 'glitch-overlay';
+                    document.body.appendChild(overlay);
+                    
+                    // Remove overlay after animation
+                    setTimeout(() => overlay.remove(), 1000);
+                    
+                    // Play reset sound
+                    const resetSound = new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU');
+                    resetSound.volume = 0.3;
+                    resetSound.play().catch(e => console.log('Audio play failed:', e));
+                    
+                    // Clear selected referees
+                    localStorage.setItem('selectedReferees', JSON.stringify([]));
+                    
+                    // Update UI
+                    updateSelectedRefereesUI();
+                    
+                    // Show notification
+                    showNotification("Referee selection has been reset!", 3000);
+                }
+                
+                // Enhanced closeRefereePopup function
+                window.closeRefereePopup = function() {
+                    const popup = document.querySelector('.referee-popup');
+                    popup.classList.remove('show');
+                };
+            });
+
+            // ... existing code ...
+            function loadAllTimeStats() {
+                const stats = JSON.parse(localStorage.getItem('allTimeStats')) || statsConfig;
+                
+                Object.keys(stats).forEach(player => {
+                    const playerName = player.charAt(0).toUpperCase() + player.slice(1);
+                    document.querySelector(`[data-player="${player}"] .stats-player-name`).textContent = playerName;
+                    document.querySelector(`[data-player="${player}"] .stats-value.wins`).textContent = stats[player].wins;
+                    document.querySelector(`[data-player="${player}"] .stats-value.score`).textContent = stats[player].totalScore;
+                });
+                
+                document.querySelector('.last-updated').textContent = `Last Updated: ${new Date().toLocaleString()}`;
+            }
+
+            // ... existing code ...
+
+            // Add Reset All-Time Stats function
+            function resetAllTimeStats() {
+                if (confirm('Are you sure you want to reset all-time stats? This cannot be undone.')) {
+                    localStorage.setItem('allTimeStats', JSON.stringify(statsConfig));
+                    loadAllTimeStats();
+                    showNotification('All-time stats have been reset to initial values.', 3000);
+                }
+            }
+
+            // ... existing code ...
+
+            // Debugging check to make sure the reveal button exists and has a listener
+            console.log('Reveal button element:', document.querySelector('.reveal-button'));
+
+            // Add event listener to reveal button
+            // Commenting out to fix duplicate declaration error 
+            // const revealButton = document.querySelector('.reveal-button');
+            if (revealButton) {
+                console.log('Adding click listener to reveal button');
+                revealButton.addEventListener('click', () => {
+                    console.log('Reveal button clicked!');
+                    console.log('currentImageData:', currentImageData);
+                    
+                    if (currentImageData && currentImageData.name) {
+                        // Create glitch overlay
+                        const overlay = document.createElement('div');
+                        overlay.className = 'glitch-overlay';
+                        document.body.appendChild(overlay);
+                        
+                        // Remove overlay after animation
+                        setTimeout(() => overlay.remove(), 1000);
+                        
+                        // For files in the folder, get the clean filename without path
+                        let displayName = getCleanFilenameForDisplay(currentImageData.name);
+                        
+                        // Set up the popup with the image name
+                        const popup = document.querySelector('.reveal-popup');
+                        const image = popup.querySelector('.reveal-image');
+                        const nameElement = popup.querySelector('.reveal-name');
+                        
+                        // Clear any existing content
+                        nameElement.textContent = '';
+                        image.style.display = 'none';
+                        
+                        // Remove any previously created revealed-name elements (this fixes double text)
+                        const existingNames = popup.querySelectorAll('.revealed-name');
+                        existingNames.forEach(element => element.remove());
+                        
+                        // Handle different sections
+                        if (currentSection === 'dialogue' || currentSection === 'frame') {
+                            // For dialogue and frame sections, only show the name
+                            image.style.display = 'none';
+                            nameElement.style.fontSize = '36px';
+                            nameElement.style.color = '#00ffff';
+                            nameElement.style.margin = '30px 0';
+                            nameElement.style.textShadow = '0 0 15px rgba(0, 255, 255, 0.7), 0 0 30px rgba(0, 255, 255, 0.5), 0 0 45px rgba(0, 255, 255, 0.3)';
+                        } else if (currentSection === 'curves' || currentSection === 'eyes') {
+                            // For curves and eyes sections, show both image and name
+                            if (currentImageData.revealSrc) {
+                                // First check if the reveal image exists
+                                const revealImg = new Image();
+                                revealImg.onload = function() {
+                                    // If the image loads, display it
+                                    image.src = currentImageData.revealSrc;
+                                    image.style.display = 'block';
+                                    nameElement.textContent = displayName;
+                                    nameElement.style.fontSize = '36px';
+                                    nameElement.style.color = '#00ffff';
+                                    nameElement.style.margin = '30px 0';
+                                    nameElement.style.textShadow = '0 0 15px rgba(0, 255, 255, 0.7), 0 0 30px rgba(0, 255, 255, 0.5), 0 0 45px rgba(0, 255, 255, 0.3)';
+                                };
+                                revealImg.onerror = function() {
+                                    // If the image fails to load, show the original image
+                                    image.src = currentImageData.src;
+                                    image.style.display = 'block';
+                                    nameElement.textContent = displayName;
+                                    nameElement.style.fontSize = '36px';
+                                    nameElement.style.color = '#00ffff';
+                                    nameElement.style.margin = '30px 0';
+                                    nameElement.style.textShadow = '0 0 15px rgba(0, 255, 255, 0.7), 0 0 30px rgba(0, 255, 255, 0.5), 0 0 45px rgba(0, 255, 255, 0.3)';
+                                };
+                                revealImg.src = currentImageData.revealSrc;
+                            } else {
+                                // If no reveal image, use the original image
+                                image.src = currentImageData.src;
+                                image.style.display = 'block';
+                                nameElement.textContent = displayName;
+                                nameElement.style.fontSize = '36px';
+                                nameElement.style.color = '#00ffff';
+                                nameElement.style.margin = '30px 0';
+                                nameElement.style.textShadow = '0 0 15px rgba(0, 255, 255, 0.7), 0 0 30px rgba(0, 255, 255, 0.5), 0 0 45px rgba(0, 255, 255, 0.3)';
+                            }
+                        }
+                    } else {
+                        console.log('No image data or name available');
+                    }
+                });
+            }
+
+            // ... existing code ...
+
+            // Debugging check to make sure the reveal button exists
+            console.log('Reveal button element check:', document.querySelector('.reveal-button'));
+
+            // Update the existing reveal button with debugging
+            if (revealButton) {
+                console.log('Reveal button found, adding debug to listener');
+                // Remove any existing listeners to avoid duplicates
+                const oldRevealButton = revealButton.cloneNode(true);
+                revealButton.parentNode.replaceChild(oldRevealButton, revealButton);
+                
+                // Assign the new element to the existing variable
+                revealButton = oldRevealButton;
+                
+                // Add the event listener with debugging
+                revealButton.addEventListener('click', () => {
+                    console.log('Reveal button clicked!');
+                    console.log('currentImageData:', currentImageData);
+                    console.log('currentSection:', currentSection);
+                    
+                    // Rest of the original event handler
+                    if (currentImageData && currentImageData.name) {
+                        // Create glitch overlay
+                        const overlay = document.createElement('div');
+                        overlay.className = 'glitch-overlay';
+                        document.body.appendChild(overlay);
+                        
+                        // Remove overlay after animation
+                        setTimeout(() => overlay.remove(), 1000);
+                        
+                        // For files in the folder, get the clean filename without path
+                        let displayName = getCleanFilenameForDisplay(currentImageData.name);
+                        
+                        // Set up the popup with the image name
+                        const popup = document.querySelector('.reveal-popup');
+                        const image = popup.querySelector('.reveal-image');
+                        const nameElement = popup.querySelector('.reveal-name');
+                        
+                        // Clear any existing content
+                        nameElement.textContent = '';
+                        image.style.display = 'none';
+                        
+                        // Remove any previously created revealed-name elements (this fixes double text)
+                        const existingNames = popup.querySelectorAll('.revealed-name');
+                        existingNames.forEach(element => element.remove());
+                        
+                        // Handle different sections
+                        if (currentSection === 'dialogue' || currentSection === 'frame') {
+                            // For dialogue and frame sections, only show the name
+                            image.style.display = 'none';
+                            nameElement.style.fontSize = '36px';
+                            nameElement.style.color = '#00ffff';
+                            nameElement.style.margin = '30px 0';
+                            nameElement.style.textShadow = '0 0 15px rgba(0, 255, 255, 0.7), 0 0 30px rgba(0, 255, 255, 0.5), 0 0 45px rgba(0, 255, 255, 0.3)';
+                        } else if (currentSection === 'curves' || currentSection === 'eyes') {
+                            // For curves and eyes sections, show both image and name
+                            if (currentImageData.revealSrc) {
+                                // First check if the reveal image exists
+                                const revealImg = new Image();
+                                revealImg.onload = function() {
+                                    // If the image loads, display it
+                                    image.src = currentImageData.revealSrc;
+                                    image.style.display = 'block';
+                                    nameElement.textContent = displayName;
+                                    nameElement.style.fontSize = '36px';
+                                    nameElement.style.color = '#00ffff';
+                                    nameElement.style.margin = '30px 0';
+                                    nameElement.style.textShadow = '0 0 15px rgba(0, 255, 255, 0.7), 0 0 30px rgba(0, 255, 255, 0.5), 0 0 45px rgba(0, 255, 255, 0.3)';
+                                };
+                                revealImg.onerror = function() {
+                                    // If the image fails to load, show the original image
+                                    image.src = currentImageData.src;
+                                    image.style.display = 'block';
+                                    nameElement.textContent = displayName;
+                                    nameElement.style.fontSize = '36px';
+                                    nameElement.style.color = '#00ffff';
+                                    nameElement.style.margin = '30px 0';
+                                    nameElement.style.textShadow = '0 0 15px rgba(0, 255, 255, 0.7), 0 0 30px rgba(0, 255, 255, 0.5), 0 0 45px rgba(0, 255, 255, 0.3)';
+                                };
+                                revealImg.src = currentImageData.revealSrc;
+                            } else {
+                                // If no reveal image, use the original image
+                                image.src = currentImageData.src;
+                                image.style.display = 'block';
+                                nameElement.textContent = displayName;
+                                nameElement.style.fontSize = '36px';
+                                nameElement.style.color = '#00ffff';
+                                nameElement.style.margin = '30px 0';
+                                nameElement.style.textShadow = '0 0 15px rgba(0, 255, 255, 0.7), 0 0 30px rgba(0, 255, 255, 0.5), 0 0 45px rgba(0, 255, 255, 0.3)';
+                            }
+                        }
+                    } else {
+                        console.log('No image data or name available');
+                    }
+                });
+            }
+        </script>
+
+        <!-- Simple reveal button fix script -->
+        <script>
+            // Wait for page to be fully loaded before attaching event listener
+            window.addEventListener('load', function() {
+                // Simple timeout to ensure all other scripts have run
+                setTimeout(function() {
+                    console.log('Simple reveal button fix running');
+                    
+                    // Find the reveal button
+                    const revealBtn = document.querySelector('.reveal-button');
+                    if (revealBtn) {
+                        console.log('Found reveal button, adding event listener');
+                        
+                        // Add direct click handler
+                        revealBtn.onclick = function(e) {
+                            console.log('Reveal button clicked');
+                            
+                            // Find and show popup
+                            const popup = document.querySelector('.reveal-popup');
+                            if (popup) {
+                                popup.classList.add('show');
+                                console.log('Showing popup');
+                            }
+                            
+                            // Return false to prevent default behavior
+                            return false;
+                        };
+                    } else {
+                        console.log('Reveal button not found');
+                    }
+                }, 1000); // Wait 1 second after page load
+            });
+        </script>
+    </body>
+</html>

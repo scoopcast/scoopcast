@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Path Tester</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .test-image {
+            max-width: 100%;
+            max-height: 300px;
+            display: block;
+            margin: 10px auto;
+            border: 2px solid #ddd;
+        }
+        .test-path {
+            font-family: monospace;
+            background: #f5f5f5;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        .test-result {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .success {
+            color: green;
+        }
+        .failure {
+            color: red;
+        }
+        button {
+            padding: 10px 15px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px auto;
+            display: block;
+        }
+        button:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Image Path Tester</h1>
+    <p>This tool helps diagnose image loading issues by trying different path variations.</p>
+    
+    <!-- Test Placeholder Image -->
+    <div class="test-container">
+        <h2>Testing Placeholder Image</h2>
+        <div class="test-path">./images/placeholder.svg</div>
+        <img src="./images/placeholder.svg" alt="Placeholder" class="test-image" id="placeholder1">
+        <div class="test-result" id="placeholder1-result">Testing...</div>
+    </div>
+    
+    <!-- Test Placeholder with different path -->
+    <div class="test-container">
+        <h2>Testing Placeholder (Alternate Path)</h2>
+        <div class="test-path">/images/placeholder.svg</div>
+        <img src="/images/placeholder.svg" alt="Placeholder" class="test-image" id="placeholder2">
+        <div class="test-result" id="placeholder2-result">Testing...</div>
+    </div>
+    
+    <!-- Test Frame Image -->
+    <div class="test-container">
+        <h2>Testing Frame Image</h2>
+        <div class="test-path">./Guesstheframe/1.interstellar.png</div>
+        <img src="./Guesstheframe/1.interstellar.png" alt="Frame" class="test-image" id="frame1">
+        <div class="test-result" id="frame1-result">Testing...</div>
+    </div>
+    
+    <!-- Test Frame Image alternate path -->
+    <div class="test-container">
+        <h2>Testing Frame Image (Alternate Path)</h2>
+        <div class="test-path">/Guesstheframe/1.interstellar.png</div>
+        <img src="/Guesstheframe/1.interstellar.png" alt="Frame" class="test-image" id="frame2">
+        <div class="test-result" id="frame2-result">Testing...</div>
+    </div>
+    
+    <!-- Test Dialogue Image -->
+    <div class="test-container">
+        <h2>Testing Dialogue Image</h2>
+        <div class="test-path">./Guessthedialogue/1.I'll Will be Back.png</div>
+        <img src="./Guessthedialogue/1.I'll Will be Back.png" alt="Dialogue" class="test-image" id="dialogue1">
+        <div class="test-result" id="dialogue1-result">Testing...</div>
+    </div>
+    
+    <!-- Test Dialogue Image alternate path -->
+    <div class="test-container">
+        <h2>Testing Dialogue Image (Alternate Path)</h2>
+        <div class="test-path">/Guessthedialogue/1.I'll Will be Back.png</div>
+        <img src="/Guessthedialogue/1.I'll Will be Back.png" alt="Dialogue" class="test-image" id="dialogue2">
+        <div class="test-result" id="dialogue2-result">Testing...</div>
+    </div>
+    
+    <button id="test-all">Test All Paths</button>
+    
+    <script>
+        // Function to test an image
+        function testImage(imgId, resultId) {
+            const img = document.getElementById(imgId);
+            const result = document.getElementById(resultId);
+            
+            // Add timestamp to prevent caching
+            const originalSrc = img.src.split('?')[0];
+            img.src = originalSrc + '?t=' + new Date().getTime();
+            
+            // Check if image loads correctly
+            img.onload = function() {
+                result.textContent = "SUCCESS: Image loaded correctly";
+                result.className = "test-result success";
+                console.log("✅ Success loading:", originalSrc);
+            };
+            
+            img.onerror = function() {
+                result.textContent = "FAILURE: Image failed to load";
+                result.className = "test-result failure";
+                console.log("❌ Failed loading:", originalSrc);
+            };
+        }
+        
+        // Test all images
+        document.getElementById('test-all').addEventListener('click', function() {
+            const images = [
+                { id: 'placeholder1', resultId: 'placeholder1-result' },
+                { id: 'placeholder2', resultId: 'placeholder2-result' },
+                { id: 'frame1', resultId: 'frame1-result' },
+                { id: 'frame2', resultId: 'frame2-result' },
+                { id: 'dialogue1', resultId: 'dialogue1-result' },
+                { id: 'dialogue2', resultId: 'dialogue2-result' }
+            ];
+            
+            images.forEach(img => {
+                testImage(img.id, img.resultId);
+            });
+        });
+        
+        // Initial test on page load
+        window.addEventListener('load', function() {
+            document.getElementById('test-all').click();
+        });
+    </script>
+</body>
+</html> 
