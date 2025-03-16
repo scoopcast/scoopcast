@@ -3,72 +3,79 @@
  * Edit this file to easily update image sources and names for all sections.
  */
 
+// Function to fix image paths based on environment
+function getImagePath(path) {
+    // Always return the path as is - no modifications needed
+    // since we're using relative paths from the root directory
+    return path;
+}
+
 // Configuration for all image sections
 const imagesConfig = {
     // Frame section images
     frame: [
         { 
-            src: './Guesstheframe/Edge of Tomorrow.png', 
+            src: getImagePath('Guesstheframe/Edge of Tomorrow.png'), 
             name: 'Edge of Tomorrow'
         },
         { 
-            src: './Guesstheframe/inception.png', 
+            src: getImagePath('Guesstheframe/Inception.png'), 
             name: 'Inception'
         },
         { 
-            src: './Guesstheframe/Pirates of the Caribbean At Worlds End.png', 
+            src: getImagePath('Guesstheframe/Pirates of the Caribbean At Worlds End.png'), 
             name: 'Pirates of the Caribbean At Worlds End'
         },
         { 
-            src: './Guesstheframe/The Departed.png', 
+            src: getImagePath('Guesstheframe/The Departed.png'), 
             name: 'The Departed'
         },
         { 
-            src: './Guesstheframe/The Lord of the Rings The Two Towers.png', 
+            src: getImagePath('Guesstheframe/The Lord of the Rings The Two Towers.png'), 
             name: 'The Lord of the Rings The Two Towers'
         },
         { 
-            src: './Guesstheframe/The Wolf of Wall Street.png', 
+            src: getImagePath('Guesstheframe/The Wolf of Wall Street.png'), 
             name: 'The Wolf of Wall Street'
         },
         { 
-            src: './Guesstheframe/Zootopia.png', 
+            src: getImagePath('Guesstheframe/Zootopia.png'), 
             name: 'Zootopia'
         },
         { 
-            src: './Guesstheframe/Eternal Sunshine of the Spotless Mind.png', 
+            src: getImagePath('Guesstheframe/Eternal Sunshine of the Spotless Mind.png'), 
             name: 'Eternal Sunshine of the Spotless Mind'
         },
         { 
-            src: './Guesstheframe/Fight Club.png', 
+            src: getImagePath('Guesstheframe/Fight Club.png'), 
             name: 'Fight Club'
         },
         { 
-            src: './Guesstheframe/Harry Potter and the Prisoner of Azkaban.png', 
+            src: getImagePath('Guesstheframe/Harry Potter and the Prisoner of Azkaban.png'), 
             name: 'Harry Potter and the Prisoner of Azkaban'
         },
         { 
-            src: './Guesstheframe/Law Abiding Citizen.png', 
+            src: getImagePath('Guesstheframe/Law Abiding Citizen.png'), 
             name: 'Law Abiding Citizen'
         },
         { 
-            src: './Guesstheframe/Pirates of the Caribbean Dead Mans Chest.png', 
+            src: getImagePath('Guesstheframe/Pirates of the Caribbean Dead Mans Chest.png'), 
             name: 'Pirates of the Caribbean Dead Mans Chest'
         },
         { 
-            src: './Guesstheframe/The Avengers (2012).png', 
+            src: getImagePath('Guesstheframe/The Avengers (2012).png'), 
             name: 'The Avengers (2012)'
         },
         { 
-            src: './Guesstheframe/The Truman Show.png', 
+            src: getImagePath('Guesstheframe/The Truman Show.png'), 
             name: 'The Truman Show'
         },
         { 
-            src: './Guesstheframe/Snatch.png', 
+            src: getImagePath('Guesstheframe/Snatch.png'), 
             name: 'Snatch'
         },
         { 
-            src: './Guesstheframe/Deadpool.png', 
+            src: getImagePath('Guesstheframe/Deadpool.png'), 
             name: 'Deadpool'
         },
         // Add more frame images here as needed
@@ -77,27 +84,27 @@ const imagesConfig = {
     // Dialogue section images
     dialogue: [
         { 
-            src: './Guessthedialogue/1.I\'ll Will be Back.png', 
+            src: getImagePath('Guessthedialogue/1.I\'ll Will be Back.png'), 
             name: 'The Terminator (1984)'
         },
         { 
-            src: './Guessthedialogue/2.Mogambo khush hua!.png', 
+            src: getImagePath('Guessthedialogue/2.Mogambo khush hua!.png'), 
             name: 'Mr. India (1987)'
         },
         { 
-            src: './Guessthedialogue/I am king of the world.png', 
+            src: getImagePath('Guessthedialogue/I am king of the world.png'), 
             name: 'Titanic (1997)'
         },
         { 
-            src: './Guessthedialogue/Pushpa.png', 
+            src: getImagePath('Guessthedialogue/Pushpa.png'), 
             name: 'Amar Prem (1972)'
         },
         { 
-            src: './Guessthedialogue/keep your.png', 
+            src: getImagePath('Guessthedialogue/keep your.png'), 
             name: 'The Godfather Part II (1974)'
         },
         { 
-            src: './Guessthedialogue/May the force.png', 
+            src: getImagePath('Guessthedialogue/May the force.png'), 
             name: 'Star Wars (1977)'
         },
         // Add more dialogue images here as needed
@@ -106,78 +113,78 @@ const imagesConfig = {
     // Eyes section images - Note: Directory currently empty, using placeholder
     eyes: [
         { 
-            src:'./Guesstheeyesreveal/Ana de Armas crooped.jpg',
+            src: getImagePath('Guesstheeyesreveal/Ana de Armas crooped.jpg'),
             name: 'Ana de Armas',
-            revealSrc:  './Guesstheeyes/Ana de Armas.jpg', 
+            revealSrc: getImagePath('Guesstheeyes/Ana de Armas.jpg')
         },
         { 
-            src: './Guesstheeyesreveal/Elizabeth Olsen crooped.jpg', 
+            src: getImagePath('Guesstheeyesreveal/Elizabeth Olsen crooped.jpg'), 
             name: 'Elizabeth Olsen',
-            revealSrc: './Guesstheeyes/Elizabeth Olsen.jpg',
+            revealSrc: getImagePath('Guesstheeyes/Elizabeth Olsen.jpg')
         },
         { 
-            src: './Guesstheeyesreveal/hayley atwell crooped.jpg', 
+            src: getImagePath('Guesstheeyesreveal/hayley atwell crooped.jpg'), 
             name: 'Hayley atwell',
-            revealSrc: './Guesstheeyes/hayley atwell.jpg',
+            revealSrc: getImagePath('Guesstheeyes/hayley atwell.jpg')
         },
         { 
-            src: './Guesstheeyesreveal/Mikey madison crooped.jpg', 
+            src: getImagePath('Guesstheeyesreveal/Mikey madison crooped.jpg'), 
             name: 'Mikey Madison',
-            revealSrc: './Guesstheeyes/Mikey madison.jpg',
+            revealSrc: getImagePath('Guesstheeyes/Mikey madison.jpg')
         },
         { 
-            src: './Guesstheeyesreveal/Scarlett Johansson cropped.jpg',
+            src: getImagePath('Guesstheeyesreveal/Scarlett Johansson cropped.jpg'),
             name: 'Scarlett Johansson',
-            revealSrc: './Guesstheeyes/Scarlett Johansson.jpg', 
+            revealSrc: getImagePath('Guesstheeyes/Scarlett Johansson.jpg')
         }, 
         { 
-            src: './Guesstheeyesreveal/Sydney sweeny cropped.jpg',
+            src: getImagePath('Guesstheeyesreveal/Sydney sweeny cropped.jpg'),
             name: 'Sydney sweeny',
-            revealSrc: './Guesstheeyes/Sydney sweeny.jpg', 
+            revealSrc: getImagePath('Guesstheeyes/Sydney sweeny.jpg')
         }
     ],
     
     // Curves section images - Note: Directory currently empty, using placeholder
     curves: [
-        { 
-            src: './GuessTheCurvesReveal/Ana De Armas blur.jpg', 
+        {
+            src: getImagePath('Guessthecurvesreveal/Ana De Armas blur.jpg'),
             name: 'Ana De Armas',
-            revealSrc: './GuessTheCurves/Ana De Armas.jpg' 
+            revealSrc: getImagePath('Guessthecurves/Ana De Armas.jpg')
         },
-        { 
-            src: './GuessTheCurvesReveal/ariana grande blur.jpg', 
+        {
+            src: getImagePath('Guessthecurvesreveal/ariana grande blur.jpg'),
             name: 'Ariana Grande',
-            revealSrc: './GuessTheCurves/ariana grande.jpg' 
+            revealSrc: getImagePath('Guessthecurves/ariana grande.jpg')
         },
-        { 
-            src: './GuessTheCurvesReveal/Brie Larson blur.jpg', 
+        {
+            src: getImagePath('Guessthecurvesreveal/Brie Larson blur.jpg'),
             name: 'Brie Larson',
-            revealSrc: './GuessTheCurves/Brie Larson.jpg' 
+            revealSrc: getImagePath('Guessthecurves/Brie Larson.jpg')
         },
-        { 
-            src: './GuessTheCurvesReveal/Emilia Clarke blur.jpg', 
+        {
+            src: getImagePath('Guessthecurvesreveal/Emilia Clarke blur.jpg'),
             name: 'Emilia Clarke',
-            revealSrc: './GuessTheCurves/Emilia Clarke.jpg' 
+            revealSrc: getImagePath('Guessthecurves/Emilia Clarke.jpg')
         },
-        { 
-            src: './GuessTheCurvesReveal/Hailee Steinfeld blur.jpg', 
+        {
+            src: getImagePath('Guessthecurvesreveal/Hailee Steinfeld blur.jpg'),
             name: 'Hailee Steinfeld',
-            revealSrc: './GuessTheCurves/Hailee Steinfeld.jpg' 
+            revealSrc: getImagePath('Guessthecurves/Hailee Steinfeld.jpg')
         },
-        { 
-            src: './GuessTheCurvesReveal/Jennifer Lawrence blur.jpg', 
+        {
+            src: getImagePath('Guessthecurvesreveal/Jennifer Lawrence blur.jpg'),
             name: 'Jennifer Lawrence',
-            revealSrc: './GuessTheCurves/Jennifer Lawrence.jpg' 
+            revealSrc: getImagePath('Guessthecurves/Jennifer Lawrence.jpg')
         },
-        { 
-            src: './GuessTheCurvesReveal/Kat dening blur.jpg', 
+        {
+            src: getImagePath('Guessthecurvesreveal/Kat dening blur.jpg'),
             name: 'Kat Dening',
-            revealSrc: './GuessTheCurves/Kat dening.jpg' 
+            revealSrc: getImagePath('Guessthecurves/Kat dening.jpg')
         },
-        { 
-            src: './GuessTheCurvesReveal/Rachel Brosnahanblur.jpg', 
+        {
+            src: getImagePath('Guessthecurvesreveal/Rachel Brosnahanblur.jpg'),
             name: 'Rachel Brosnahan',
-            revealSrc: './GuessTheCurves/Rachel Brosnahan.jpg' 
+            revealSrc: getImagePath('Guessthecurves/Rachel Brosnahan.jpg')
         }
     ]
 };

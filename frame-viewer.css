@@ -10,8 +10,13 @@ body {
 }
 
 .frame-container {
-    text-align: center;
-    padding: 20px;
+    position: relative;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    overflow: hidden;
 }
 
 h1 {
@@ -21,10 +26,104 @@ h1 {
 }
 
 .frame-viewer {
-    display: flex;
-    align-items: center;
-    gap: 20px;
+    position: relative;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: center;
+}
+
+.frame-image {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 600px;
+    object-fit: contain;
+    transition: filter 0.3s ease;
+}
+
+.frame-image.blurred {
+    filter: blur(20px);
+}
+
+.frame-open-btn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 10px 20px;
+    font-size: 18px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 2px solid white;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
+    z-index: 2;
+}
+
+.frame-timer {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 5px;
+    font-size: 18px;
+    font-weight: bold;
+    display: none;
+    z-index: 2;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.frame-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    padding: 15px;
+    cursor: pointer;
+    font-size: 24px;
+    transition: background 0.3s;
+    z-index: 2;
+}
+
+.frame-prev {
+    left: 10px;
+}
+
+.frame-next {
+    right: 10px;
+}
+
+.frame-counter {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 5px 15px;
+    border-radius: 15px;
+    font-size: 14px;
+    z-index: 2;
+}
+
+.frame-title {
+    color: white;
+    font-size: 24px;
     margin-bottom: 20px;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+/* Debug outline for development */
+.frame-container * {
+    outline: 1px solid rgba(255, 0, 0, 0.1);
 }
 
 .frame {
